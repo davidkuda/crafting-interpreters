@@ -34,15 +34,32 @@ func (s *Scanner) scanToken() {
 	switch c {
 	case '(':
 		s.addToken(LEFT_PAREN)
-		fmt.Println("TOKEN DETECTED")
-		break
+	case ')':
+		s.addToken(RIGHT_PAREN)
+	case '{':
+		s.addToken(LEFT_BRACE)
+	case '}':
+		s.addToken(RIGHT_BRACE)
+	case ',':
+		s.addToken(COMMA)
+	case '.':
+		s.addToken(DOT)
+	case '-':
+		s.addToken(MINUS)
+	case '+':
+		s.addToken(PLUS)
+	case ';':
+		s.addToken(SEMICOLON)
+	case '*':
+		s.addToken(STAR)
 	}
 }
 
 func (s *Scanner) addToken(tt TokenType) {
+	lexeme := string(s.Source[s.start:s.current])
 	t := NewToken(
 		tt,
-		string(s.Source[s.start:s.current]),
+		lexeme,
 		"",
 		s.line,
 	)
