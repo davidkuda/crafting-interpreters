@@ -29,12 +29,15 @@ func (s *Scanner) ScanTokens() {
 	fmt.Println(s.Tokens)
 }
 
+func (s *Scanner) isAtEnd() bool {
+	return s.current >= len(s.Source)
 }
 
 func (s *Scanner) scanToken() {
 	c := s.Source[s.current]
 	s.current++
 	switch c {
+	// single-character tokens:
 	case '(':
 		s.addToken(LEFT_PAREN)
 	case ')':
@@ -55,6 +58,36 @@ func (s *Scanner) scanToken() {
 		s.addToken(SEMICOLON)
 	case '*':
 		s.addToken(STAR)
+
+	// one or two character tokens:
+	case '!':
+		if s.nextIsEqualSign() {
+			s.addToken(BANG_EQUAL)
+		} else {
+			s.addToken(BANG)
+		}
+	case '=':
+		if s.nextIsEqualSign() {
+			s.addToken(EQUAL_EQUAL)
+		} else {
+			s.addToken(EQUAL)
+		}
+	case '<':
+		if s.nextIsEqualSign() {
+			s.addToken(LESS_EQUAL)
+		} else {
+			s.addToken(LESS)
+		}
+	case '>':
+		if s.nextIsEqualSign() {
+			s.addToken(GREATER_EQUAL)
+		} else {
+			s.addToken(GREATER)
+		}
+
+	default:
+		// TODO: report error
+		fmt.Println("DEFAULT")
 	}
 }
 
@@ -67,4 +100,20 @@ func (s *Scanner) addToken(tt TokenType) {
 		s.line,
 	)
 	s.Tokens = append(s.Tokens, t)
+}
+
+func (s *Scanner) nextIsEqualSign() bool {
+	return s.match('=')
+}
+
+func (s *Scanner) match(char byte) bool {
+	if s.isAtEnd() {
+		return false
+	}
+	if s.Source[s.current] == char {
+		s.current++
+		return true
+	} else {
+		return false
+	}
 }
