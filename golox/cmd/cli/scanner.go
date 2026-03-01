@@ -8,9 +8,9 @@ type Scanner struct {
 	Source []byte
 	Tokens []Token
 
-	start   int
-	current int
-	line    int
+	start   int // start of a lexeme
+	current int // current character in the loop
+	line    int // lines when reading a file (incremented by \n)
 }
 
 func NewScanner(source []byte) Scanner {
@@ -23,9 +23,12 @@ func NewScanner(source []byte) Scanner {
 
 func (s *Scanner) ScanTokens() {
 	for s.current < len(s.Source) {
-		fmt.Println(s.current)
+		s.start = s.current
 		s.scanToken()
 	}
+	fmt.Println(s.Tokens)
+}
+
 }
 
 func (s *Scanner) scanToken() {
