@@ -58,4 +58,6 @@ func (g *golox) runPrompt() {
 
 func run(b []byte) {
 	fmt.Println(string(b))
+	scanner := NewScanner(b)
+	scanner.ScanTokens()
 }
