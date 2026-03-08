@@ -1,6 +1,6 @@
 package main
 
-import "fmt"
+import "strconv"
 
 // Walks through source code and generates tokens from it.
 type Scanner struct {
@@ -99,7 +99,7 @@ func (s *Scanner) scanToken() {
 	// longer lexemes:
 	// strings:
 	case '"':
-	s.string()
+		s.string()
 
 	// ignore whitespace:
 	case ' ':
@@ -112,8 +112,11 @@ func (s *Scanner) scanToken() {
 		break
 
 	default:
-		// TODO: report error, maybe with an error struct?
-		fmt.Println("DEFAULT")
+		if s.isDigit(c) {
+			s.number()
+		} else {
+			// TODO: report error, maybe with an error struct?
+		}
 	}
 }
 
@@ -172,6 +175,13 @@ func (s *Scanner) peek() byte {
 	return s.Source[s.current]
 }
 
+func (s *Scanner) peekNext() byte {
+	if s.current+1 >= len(s.Source) {
+		return '\000'
+	}
+	return s.Source[s.current+1]
+}
+
 func (s *Scanner) string() {
 	for s.peek() != '"' && !s.isAtEnd() {
 		if s.peek() == '\n' {
@@ -189,8 +199,33 @@ func (s *Scanner) string() {
 	s.advance()
 
 	// +1 and -1 are necessary to not include the double quotes in the string
-	start := s.start+1
-	end := s.current-1
+	start := s.start + 1
+	end := s.current - 1
 	str := string(s.Source[start:end])
 	s.addTokenWithLiteral(STRING, str)
+}
+
+func (s *Scanner) isDigit(c byte) bool {
+	return c >= '0' && c <= '9'
+}
+
+func (s *Scanner) number() {
+	for s.isDigit(s.peek()) {
+		s.advance()
+	}
+
+	// fraction?
+	if s.peek() == '.' && s.isDigit(s.peekNext()) {
+		s.advance()
+		for s.isDigit(s.peek()) {
+			s.advance()
+		}
+	}
+
+	str := string(s.Source[s.start:s.current])
+	v, err := strconv.ParseFloat(str, 64)
+	if err != nil {
+		// TODO: handle error
+	}
+	s.addTokenWithLiteral(NUMBER, v)
 }
