@@ -68,3 +68,37 @@ func TestScanComment(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func TestScanString(t *testing.T) {
+	var input string
+	var s Scanner
+	var failed bool
+
+	input = "\"one\" \"two\" \"three\""
+	expected := []Token{
+		{STRING, "\"one\"", "one", 1},
+		{STRING, "\"two\"", "two", 1},
+		{STRING, "\"three\"", "three", 1},
+	}
+
+	s = NewScanner([]byte(input))
+	s.ScanTokens()
+
+	if len(expected) != len(s.Tokens) {
+		t.Logf("failed scanning tokens: number of tokens are wrong: expected=%d received=%d\n", len(expected), len(s.Tokens))
+		failed = true
+	}
+
+	for i, token := range s.Tokens {
+		if token != expected[i] {
+			t.Logf("failed scanning tokens:\n")
+			t.Logf("    expected: %v\n", expected[i])
+			t.Logf("    received: %v\n", token)
+			failed = true
+		}
+	}
+
+	if failed {
+		t.FailNow()
+	}
+}
