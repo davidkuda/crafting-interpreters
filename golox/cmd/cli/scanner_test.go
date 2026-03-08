@@ -77,8 +77,8 @@ func TestScanner(t *testing.T) {
 		for i, token := range s.Tokens {
 			if token != test.expected[i] {
 				t.Logf("[%s]: failed scanning tokens:\n", test.name)
-				t.Logf("    expected: %v\n", test.expected[i])
-				t.Logf("    received: %v\n", token)
+				t.Logf("    expected: %+v\n", test.expected[i])
+				t.Logf("    received: %+v\n", token)
 				failed = true
 			}
 		}
