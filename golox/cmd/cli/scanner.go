@@ -122,7 +122,7 @@ func (s *Scanner) addToken(tt TokenType) {
 	t := NewToken(
 		tt,
 		lexeme,
-		"",
+		nil,
 		s.line,
 	)
 	s.Tokens = append(s.Tokens, t)
