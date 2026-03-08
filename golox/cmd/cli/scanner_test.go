@@ -69,9 +69,9 @@ func TestScanner(t *testing.T) {
 				failed = true
 			}
 		}
+	}
 
-		if failed {
-			t.FailNow()
-		}
+	if failed {
+		t.FailNow()
 	}
 }
