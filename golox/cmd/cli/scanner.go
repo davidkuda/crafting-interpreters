@@ -26,7 +26,6 @@ func (s *Scanner) ScanTokens() {
 		s.start = s.current
 		s.scanToken()
 	}
-	fmt.Println(s.Tokens)
 }
 
 func (s *Scanner) isAtEnd() bool {
@@ -58,6 +57,18 @@ func (s *Scanner) scanToken() {
 		s.addToken(SEMICOLON)
 	case '*':
 		s.addToken(STAR)
+	case '/':
+		if s.nextIsSlash() {
+			// comments:
+			// comments are lexemes, but they are not meaningful, no further action are based
+			// on comments. Therefore, we ignore them and don't create a comment token.
+			// In fact, TokenType Comment doesn't even exist. :)
+			for s.peek() != '\n' && !s.isAtEnd() {
+				_ = s.advance()
+			}
+		} else {
+			s.addToken(SLASH)
+		}
 
 	// one or two character tokens:
 	case '!':
@@ -85,8 +96,18 @@ func (s *Scanner) scanToken() {
 			s.addToken(GREATER)
 		}
 
+	// ignore whitespace:
+	case ' ':
+	case '\r':
+	case '\t':
+		break
+
+	case '\n':
+		s.line++
+		break
+
 	default:
-		// TODO: report error
+		// TODO: report error, maybe with an error struct?
 		fmt.Println("DEFAULT")
 	}
 }
@@ -112,6 +133,10 @@ func (s *Scanner) nextIsEqualSign() bool {
 	return s.match('=')
 }
 
+func (s *Scanner) nextIsSlash() bool {
+	return s.match('/')
+}
+
 func (s *Scanner) match(char byte) bool {
 	if s.isAtEnd() {
 		return false
@@ -122,4 +147,11 @@ func (s *Scanner) match(char byte) bool {
 	} else {
 		return false
 	}
+}
+
+func (s *Scanner) peek() byte {
+	if s.isAtEnd() {
+		return '\000'
+	}
+	return s.Source[s.current]
 }
