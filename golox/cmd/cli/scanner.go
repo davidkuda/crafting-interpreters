@@ -34,8 +34,8 @@ func (s *Scanner) isAtEnd() bool {
 }
 
 func (s *Scanner) scanToken() {
-	c := s.Source[s.current]
-	s.current++
+	c := s.advance()
+
 	switch c {
 	// single-character tokens:
 	case '(':
@@ -100,6 +100,12 @@ func (s *Scanner) addToken(tt TokenType) {
 		s.line,
 	)
 	s.Tokens = append(s.Tokens, t)
+}
+
+func (s *Scanner) advance() byte {
+	char := s.Source[s.current]
+	s.current++
+	return char
 }
 
 func (s *Scanner) nextIsEqualSign() bool {
