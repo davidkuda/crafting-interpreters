@@ -96,6 +96,11 @@ func (s *Scanner) scanToken() {
 			s.addToken(GREATER)
 		}
 
+	// longer lexemes:
+	// strings:
+	case '"':
+	s.string()
+
 	// ignore whitespace:
 	case ' ':
 	case '\r':
@@ -118,6 +123,17 @@ func (s *Scanner) addToken(tt TokenType) {
 		tt,
 		lexeme,
 		"",
+		s.line,
+	)
+	s.Tokens = append(s.Tokens, t)
+}
+
+func (s *Scanner) addTokenWithLiteral(tt TokenType, l any) {
+	lexeme := string(s.Source[s.start:s.current])
+	t := NewToken(
+		tt,
+		lexeme,
+		l,
 		s.line,
 	)
 	s.Tokens = append(s.Tokens, t)
@@ -154,4 +170,27 @@ func (s *Scanner) peek() byte {
 		return '\000'
 	}
 	return s.Source[s.current]
+}
+
+func (s *Scanner) string() {
+	for s.peek() != '"' && !s.isAtEnd() {
+		if s.peek() == '\n' {
+			s.line++
+		}
+		s.advance()
+	}
+
+	if s.isAtEnd() {
+		// TODO: error:
+		// Lox.error(line, "unterminated string")
+		return
+	}
+
+	s.advance()
+
+	// +1 and -1 are necessary to not include the double quotes in the string
+	start := s.start+1
+	end := s.current-1
+	str := string(s.Source[start:end])
+	s.addTokenWithLiteral(STRING, str)
 }
