@@ -42,6 +42,19 @@ func TestScanner(t *testing.T) {
 				{STRING, "\"three\"", "three", 1},
 			},
 		},
+		{
+			"numbers",
+			"\"one\" (42) \"three\"\n108\n42.42",
+			[]Token{
+				{STRING, "\"one\"", "one", 1},
+				{LEFT_PAREN, "(", nil, 1},
+				{NUMBER, "42", float64(42), 1},
+				{RIGHT_PAREN, ")", nil, 1},
+				{STRING, "\"three\"", "three", 1},
+				{NUMBER, "108", float64(108), 2},
+				{NUMBER, "42.42", float64(42.42), 3},
+			},
+		},
 	}
 
 	var failed bool
