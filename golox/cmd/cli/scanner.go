@@ -36,6 +36,16 @@ func (s *Scanner) scanToken() {
 	c := s.advance()
 
 	switch c {
+	// ignore whitespace:
+	case ' ':
+	case '\r':
+	case '\t':
+		break
+
+	case '\n':
+		s.line++
+		break
+
 	// single-character tokens:
 	case '(':
 		s.addToken(LEFT_PAREN)
@@ -97,19 +107,10 @@ func (s *Scanner) scanToken() {
 		}
 
 	// longer lexemes:
+
 	// strings:
 	case '"':
 		s.string()
-
-	// ignore whitespace:
-	case ' ':
-	case '\r':
-	case '\t':
-		break
-
-	case '\n':
-		s.line++
-		break
 
 	default:
 		if s.isDigit(c) {
