@@ -64,8 +64,8 @@ const (
 	CLASS
 	ELSE
 	FALSE
-	FUN
 	FOR
+	FUN
 	IF
 	NIL
 	OR

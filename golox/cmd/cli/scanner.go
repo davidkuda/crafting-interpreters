@@ -115,6 +115,8 @@ func (s *Scanner) scanToken() {
 	default:
 		if s.isDigit(c) {
 			s.number()
+		} else if s.isAlpha(c) {
+			s.identifier()
 		} else {
 			// TODO: report error, maybe with an error struct?
 		}
@@ -229,4 +231,69 @@ func (s *Scanner) number() {
 		// TODO: handle error
 	}
 	s.addTokenWithLiteral(NUMBER, v)
+}
+
+func (s *Scanner) isAlpha(c byte) bool {
+	isSmallLetter := c >= 'a' && c <= 'z'
+	isCapitalLetter := c >= 'A' && c <= 'Z'
+
+	return isSmallLetter || isCapitalLetter || c == '_'
+}
+
+func (s *Scanner) isAlphaNumeric(c byte) bool {
+	return s.isAlpha(c) || s.isDigit(c)
+}
+
+func (s *Scanner) identifier() {
+	for s.isAlphaNumeric(s.peek()) {
+		s.advance()
+	}
+
+	text := string(s.Source[s.start:s.current])
+	isKeyword, keyword := s.isKeyword(text)
+	if isKeyword {
+		//
+		s.addToken(keyword)
+	} else {
+		s.addToken(IDENTIFIER)
+	}
+}
+
+func (s *Scanner) isKeyword(text string) (bool, TokenType) {
+	switch text {
+	case "and":
+		return true, AND
+	case "class":
+		return true, CLASS
+	case "else":
+		return true, ELSE
+	case "false":
+		return true, FALSE
+	case "for":
+		return true, FOR
+	case "fun":
+		return true, FUN
+	case "if":
+		return true, IF
+	case "nil":
+		return true, NIL
+	case "or":
+		return true, OR
+	case "print":
+		return true, PRINT
+	case "return":
+		return true, RETURN
+	case "super":
+		return true, SUPER
+	case "this":
+		return true, THIS
+	case "true":
+		return true, TRUE
+	case "var":
+		return true, VAR
+	case "while":
+		return true, WHILE
+	}
+
+	return false, 0
 }
