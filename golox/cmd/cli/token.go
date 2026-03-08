@@ -1,16 +1,18 @@
 package main
 
+import "fmt"
+
 type Token struct {
 	Type    TokenType
 	Lexeme  string
-	Literal string
+	Literal any // java Object =~ go any
 	Line    int
 }
 
 func NewToken(
 	ttype TokenType,
 	lexeme string,
-	literal string,
+	literal any,
 	line int,
 ) Token {
 	return Token{
@@ -22,7 +24,7 @@ func NewToken(
 }
 
 func (t *Token) String() string {
-	return t.Lexeme + " " + t.Literal
+	return t.Lexeme + " " + fmt.Sprintf("%v", t.Literal)
 }
 
 type TokenType int
