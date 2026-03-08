@@ -55,6 +55,16 @@ func TestScanner(t *testing.T) {
 				{NUMBER, "42.42", float64(42.42), 3},
 			},
 		},
+		{
+			"keywords and identifiers",
+			"var answer = 42",
+			[]Token{
+				{VAR, "var", nil, 1},
+				{IDENTIFIER, "answer", nil, 1},
+				{EQUAL, "=", nil, 1},
+				{NUMBER, "42", float64(42), 1},
+			},
+		},
 	}
 
 	var failed bool
