@@ -1,12 +1,16 @@
 package main
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 // Walks through source code and generates tokens from it.
 type Scanner struct {
 	// source represents the source code, e.g. `var lang = "golox";`
 	Source []byte
 	Tokens []Token
+	Errors []*Error
 
 	start   int // start of a lexeme
 	current int // current character in the loop
@@ -118,7 +122,7 @@ func (s *Scanner) scanToken() {
 		} else if s.isAlpha(c) {
 			s.identifier()
 		} else {
-			// TODO: report error, maybe with an error struct?
+			s.Errors = append(s.Errors, NewError(s.line, "unexpected character"))
 		}
 	}
 }
@@ -194,8 +198,8 @@ func (s *Scanner) string() {
 	}
 
 	if s.isAtEnd() {
-		// TODO: error:
-		// Lox.error(line, "unterminated string")
+		err := NewError(s.line, "unterminated string")
+		s.Errors = append(s.Errors, err)
 		return
 	}
 
@@ -228,7 +232,7 @@ func (s *Scanner) number() {
 	str := string(s.Source[s.start:s.current])
 	v, err := strconv.ParseFloat(str, 64)
 	if err != nil {
-		// TODO: handle error
+		s.Errors = append(s.Errors, NewError(s.line, fmt.Sprintf("could not parse %s as float", str)))
 	}
 	s.addTokenWithLiteral(NUMBER, v)
 }

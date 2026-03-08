@@ -34,7 +34,10 @@ func (g *golox) runFile(path string) {
 		fmt.Println("could not read file.")
 		os.Exit(1)
 	}
-	run(b)
+	g.run(b)
+	if g.hadError {
+		os.Exit(65)
+	}
 }
 
 func (g *golox) runPrompt() {
@@ -52,12 +55,28 @@ func (g *golox) runPrompt() {
 			fmt.Println("bad input:", err)
 			os.Exit(1)
 		}
-		run(line)
+		g.run(line)
+		g.hadError = false
 	}
 }
 
-func run(b []byte) {
-	fmt.Println(string(b))
+func (g *golox) run(b []byte) {
 	scanner := NewScanner(b)
 	scanner.ScanTokens()
+	if len(scanner.Errors) > 0 {
+		g.hadError = true
+	}
+	for _, err := range scanner.Errors {
+		err.report()
+	}
+	if len(scanner.Tokens) > 0 {
+		fmt.Println("Scanned Tokens:")
+		for _, token := range scanner.Tokens {
+			fmt.Printf("   %+v\n", token)
+		}
+		fmt.Println("Scanner Errors:")
+		for _, err := range scanner.Errors {
+			fmt.Printf("   %+v\n", err)
+		}
+	}
 }
