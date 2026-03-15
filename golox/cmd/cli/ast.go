@@ -1,58 +1,86 @@
 package main
 
-// type Expr interface {}
-type Expr interface {
-	Accept(Visitor)
-}
+import (
+	"fmt"
+	"strconv"
+)
 
-type Visitor interface {
-	VisitBinary(*Binary) any
-	VisitGrouping(Grouping) any
-	VisitLiteral(Literal) any
-	VisitUnary(Unary) any
+type Expr interface {
+	exprNode()
 }
 
 type Binary struct {
-	left     Expr
-	operator Token
-	right    Expr
+	Left     Expr
+	Operator Token
+	Right    Expr
 }
 
-func (b *Binary) Accept(v Visitor) any {
-	return v.VisitBinary(b)
-}
+func (*Binary) exprNode() {}
 
 type Grouping struct {
-	expression Expr
+	Expression Expr
 }
+
+func (*Grouping) exprNode() {}
 
 type Literal struct {
-	value any
+	Value any
 }
+
+func (*Literal) exprNode() {}
 
 type Unary struct {
-	operator Token
-	right    Expr
+	Operator Token
+	Right    Expr
 }
 
-type ASTPrinter struct{}
+func (*Unary) exprNode() {}
 
-func (ast *ASTPrinter) print(expr Expr) string {
-	return expr.Accept(ast)
+func FormatExpr(expr Expr) string {
+	switch e := expr.(type) {
+	case *Binary:
+		return fmt.Sprintf(
+			"(%s %s %s)",
+			e.Operator.Lexeme,
+			FormatExpr(e.Left),
+			FormatExpr(e.Right),
+		)
+
+	case *Grouping:
+		return fmt.Sprintf(
+			"(group %v)",
+			FormatExpr(e.Expression),
+		)
+
+	case *Literal:
+		return literalToString(e.Value)
+
+	case *Unary:
+		return fmt.Sprintf(
+			"(%s %s)",
+			e.Operator.Lexeme,
+			FormatExpr(e.Right),
+		)
+
+	default:
+		panic(fmt.Sprintf("unknown Expr type %T", expr))
+	}
 }
 
-func (ast *ASTPrinter) VisitBinary(b *Binary) string {
-	return ""
-}
-
-func (ast *ASTPrinter) VisitGrouping(expr Expr) string {
-	return ""
-}
-
-func (ast *ASTPrinter) VisitLiteral(expr Expr) string {
-	return ""
-}
-
-func (ast *ASTPrinter) VisitUnary(expr Expr) string {
-	return ""
+func literalToString(v any) string {
+	switch x := v.(type) {
+	case nil:
+		return "nil"
+	case string:
+		return x
+	case float64:
+		return strconv.FormatFloat(x, 'f', -1, 64)
+	case bool:
+		if x {
+			return "true"
+		}
+		return "false"
+	default:
+		return fmt.Sprint(x)
+	}
 }
