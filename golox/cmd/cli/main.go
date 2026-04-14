@@ -6,14 +6,16 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/davidkuda/golox"
 )
 
-type golox struct {
+type cli struct {
 	hadError bool
 }
 
 func main() {
-	golox := golox{}
+	golox := cli{}
 
 	if len(os.Args) > 2 {
 		fmt.Println("usage: golox [script]")
@@ -28,7 +30,7 @@ func main() {
 	}
 }
 
-func (g *golox) runFile(path string) {
+func (g *cli) runFile(path string) {
 	b, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Println("could not read file.")
@@ -40,7 +42,7 @@ func (g *golox) runFile(path string) {
 	}
 }
 
-func (g *golox) runPrompt() {
+func (g *cli) runPrompt() {
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("> ")
@@ -60,14 +62,14 @@ func (g *golox) runPrompt() {
 	}
 }
 
-func (g *golox) run(b []byte) {
-	scanner := NewScanner(b)
+func (g *cli) run(b []byte) {
+	scanner := golox.NewScanner(b)
 	scanner.ScanTokens()
 	if len(scanner.Errors) > 0 {
 		g.hadError = true
 	}
 	for _, err := range scanner.Errors {
-		err.report()
+		err.Report()
 	}
 	if len(scanner.Tokens) > 0 {
 		fmt.Println("Scanned Tokens:")

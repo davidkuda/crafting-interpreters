@@ -1,4 +1,4 @@
-package main
+package golox
 
 import "fmt"
 
@@ -18,6 +18,6 @@ func NewError(line int, message string) *Error {
 	}
 }
 
-func (e *Error) report() {
+func (e *Error) Report() {
 	fmt.Printf("[line %d] Error %s: %s\n", e.line, e.where, e.message)
 }
