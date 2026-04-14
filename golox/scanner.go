@@ -32,7 +32,7 @@ func NewScanner(source []byte) Scanner {
 }
 
 func (s *Scanner) ScanTokens() {
-	for s.current < len(s.Source) {
+	for !s.isAtEnd() {
 		s.start = s.current
 		s.scanToken()
 	}
