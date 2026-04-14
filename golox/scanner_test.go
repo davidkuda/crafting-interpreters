@@ -19,6 +19,7 @@ func TestScanner(t *testing.T) {
 				{PLUS, "+", nil, 1},
 				{PLUS, "+", nil, 1},
 				{RIGHT_PAREN, ")", nil, 1},
+				{EOF, "", nil, 1},
 			},
 		},
 		{
@@ -31,6 +32,7 @@ func TestScanner(t *testing.T) {
 				{LEFT_PAREN, "(", nil, 2},
 				{PLUS, "+", nil, 2},
 				{RIGHT_PAREN, ")", nil, 2},
+				{EOF, "", nil, 2},
 			},
 		},
 		{
@@ -40,6 +42,7 @@ func TestScanner(t *testing.T) {
 				{STRING, "\"one\"", "one", 1},
 				{STRING, "\"two\"", "two", 1},
 				{STRING, "\"three\"", "three", 1},
+				{EOF, "", nil, 1},
 			},
 		},
 		{
@@ -53,6 +56,7 @@ func TestScanner(t *testing.T) {
 				{STRING, "\"three\"", "three", 1},
 				{NUMBER, "108", float64(108), 2},
 				{NUMBER, "42.42", float64(42.42), 3},
+				{EOF, "", nil, 3},
 			},
 		},
 		{
@@ -63,6 +67,7 @@ func TestScanner(t *testing.T) {
 				{IDENTIFIER, "answer", nil, 1},
 				{EQUAL, "=", nil, 1},
 				{NUMBER, "42", float64(42), 1},
+				{EOF, "", nil, 1},
 			},
 		},
 	}
