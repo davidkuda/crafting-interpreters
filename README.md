@@ -49,3 +49,16 @@ operator   -> "=="
             | "/"
             ;
 ```
+
+### Precedence and Associativity
+
+from lowest to highest precedence (same as in C):
+
+|Name        | Operators         | Associates |
+| ---------- | ----------------- | ---------- |
+| Equality   | `==` `!=`         | Left       |
+| Comparison | `>` `>=` `<` `<=` | Left       |
+| Term       | `-` `+`           | Left       |
+| Factor     | `/` `*`           | Left       |
+| Unary      | `!` `-`           | Right      |
+
