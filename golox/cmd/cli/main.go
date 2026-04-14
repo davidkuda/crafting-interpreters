@@ -62,23 +62,22 @@ func (g *cli) runPrompt() {
 	}
 }
 
-func (g *cli) run(b []byte) {
-	scanner := golox.NewScanner(b)
-	scanner.ScanTokens()
-	if len(scanner.Errors) > 0 {
+func (g *cli) run(code []byte) {
+	tokens, errs := golox.Scan(code)
+	if len(errs) > 0 {
 		g.hadError = true
-	}
-	for _, err := range scanner.Errors {
-		err.Report()
-	}
-	if len(scanner.Tokens) > 0 {
-		fmt.Println("Scanned Tokens:")
-		for _, token := range scanner.Tokens {
-			fmt.Printf("   %+v\n", token)
+		for _, err := range errs {
+			err.Report()
 		}
-		fmt.Println("Scanner Errors:")
-		for _, err := range scanner.Errors {
-			fmt.Printf("   %+v\n", err)
-		}
+	}
+
+	fmt.Println("Scanned Tokens:")
+	for _, token := range tokens {
+		fmt.Printf("   %+v\n", token)
+	}
+
+	fmt.Println("Scanner Errors:")
+	for _, err := range errs {
+		fmt.Printf("   %+v\n", err)
 	}
 }
