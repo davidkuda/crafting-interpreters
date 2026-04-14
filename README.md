@@ -50,6 +50,9 @@ operator   -> "=="
             ;
 ```
 
+The problem with this grammar is its ambiguity. We need precedence and associativity rules to make the grammar unambiguous.
+
+
 ### Precedence and Associativity
 
 from lowest to highest precedence (same as in C):
@@ -62,3 +65,49 @@ from lowest to highest precedence (same as in C):
 | Factor     | `/` `*`           | Left       |
 | Unary      | `!` `-`           | Right      |
 
+
+This yields a new grammar (without binary and without operators):
+
+```
+expression -> equality ;
+
+equality   -> comparison
+              ( ( "!=" | "==" ) comparison )* ;
+
+comparison -> term
+              ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+
+term       -> factor
+              ( ( "-" | "+" ) factor )* ;
+
+factor     -> unary
+              ( ( "/" | "*" ) unary )* ;
+
+unary      -> ( "-" | "!" ) unary
+            | primary ;
+
+primary    -> NUMBER
+            | STRING
+            | "true"
+            | "false"
+            | "nil"
+            | "(" expression ")" ;
+```
+
+The `( )*` means 0 or many times.
+
+On left-recursiveness:
+
+The following two rules are equivalent:
+
+```
+factor     -> factor ( "/" | "*" ) unary
+              | unary ;
+
+factor     -> unary
+              ( ( "/" | "*" ) unary )* ;
+```
+
+Notice how it's similar to unary. (unary is in fact right-associative.)
+
+Problem is its left-recursiveness. This will require a different technique to parse than what we are going to use for golox. therefore, we use the second expression rule.
