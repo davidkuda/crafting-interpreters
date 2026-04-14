@@ -14,3 +14,38 @@ From the book:
 The second interpreter is in C. From the book:
 
 > So in the next part, we start all over again, but this time in C. C is the perfect language for understanding how an implementation really works, all the way down to the bytes in memory and the code flowing through the CPU.
+
+# Lox expression grammar
+
+```
+expression -> literal
+            | unary
+            | binary
+            | grouping
+            ;
+
+literal    -> NUMBER
+            | STRING
+            | "true"
+            | "false"
+            | "nil"
+            ;
+
+grouping   -> "(" expression ")" ;
+
+unary      -> ( "-" | "!" ) expression ;
+
+binary     -> expression operator expression ;
+
+operator   -> "=="
+            | "!="
+            | "<"
+            | "<="
+            | ">"
+            | ">="
+            | "+"
+            | "-"
+            | "*"
+            | "/"
+            ;
+```
