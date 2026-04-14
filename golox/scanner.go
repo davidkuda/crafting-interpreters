@@ -36,6 +36,9 @@ func (s *Scanner) ScanTokens() {
 		s.start = s.current
 		s.scanToken()
 	}
+
+	s.start = s.current
+	s.addToken(EOF)
 }
 
 func (s *Scanner) isAtEnd() bool {
