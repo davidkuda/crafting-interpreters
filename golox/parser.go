@@ -27,17 +27,6 @@ func (p *Parser) expression() Expr {
 	return p.equality()
 }
 
-/* Java code from the book page 85:
-private Expr equality() {
-	Expr expr = comparison();
-	while (match(BANG_EQUAL, EQUAL_EQUAL)) {
-		Token operator = previous();
-		Expr right = comparison();
-		expr = new Expr.Binary(expr, operator, right);
-	}
-	return expr
-}
-*/
 // rule: equality -> comparison ( ( "!=" | "==" ) comparison )* ;
 func (p *Parser) equality() Expr {
 	expr := p.comparison()
@@ -51,6 +40,7 @@ func (p *Parser) equality() Expr {
 	return expr
 }
 
+// comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 func (p *Parser) comparison() Expr {
 	expr := p.term()
 
@@ -63,6 +53,7 @@ func (p *Parser) comparison() Expr {
 	return expr
 }
 
+// term -> factor ( ( "-" | "+" ) factor )* ;
 func (p *Parser) term() Expr {
 	expr := p.factor()
 
@@ -75,6 +66,7 @@ func (p *Parser) term() Expr {
 	return expr
 }
 
+// factor -> unary ( ( "/" | "*" ) unary )* ;
 func (p *Parser) factor() Expr {
 	expr := p.unary()
 
@@ -87,6 +79,7 @@ func (p *Parser) factor() Expr {
 	return expr
 }
 
+// unary -> ( "-" | "!" ) unary | primary ;
 func (p *Parser) unary() Expr {
 	if p.match(BANG, MINUS) {
 		operator := p.previous()
@@ -97,6 +90,7 @@ func (p *Parser) unary() Expr {
 	return p.primary()
 }
 
+// primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
 func (p *Parser) primary() (Expr, error) {
 	if p.match(FALSE) {
 		return &Literal{false}, nil
@@ -122,7 +116,6 @@ func (p *Parser) primary() (Expr, error) {
 
 	return nil, errors.New("could not match primary expression")
 }
-
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // helpers
