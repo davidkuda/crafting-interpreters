@@ -26,6 +26,17 @@ func NewParser(t []Token) *Parser {
 	}
 }
 
+type ParseError struct {
+	Token Token
+	Msg   string
+}
+
+// implement error interface (see https://go.dev/tour/methods/19 as reference):
+func (e *ParseError) Error() string {
+	return fmt.Sprintf("[line %d] Error at \"%s\": %s",
+		e.Token.Line, e.Token.Lexeme, e.Msg)
+}
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // rules as functions:
 
