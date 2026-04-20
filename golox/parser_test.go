@@ -1,35 +1,10 @@
 package golox
 
 import (
-	"fmt"
 	"testing"
 )
 
 func TestParser(t *testing.T) {
-	var err error
-
-	in := "21 * 2 == 42"
-
-	tokens, errs := Scan([]byte(in))
-	if errs != nil {
-		t.Fatalf("could not scan input: %s: %v", in, err)
-	}
-
-	ast, err := Parse(tokens)
-	if err != nil {
-		t.Fatalf("could not parse input: %s: %v", in, err)
-	}
-
-	out := FormatExpr(ast)
-	fmt.Printf("out: %v\n", out)
-
-	expected := "(== (* 21 2) 42)"
-	if out != expected {
-		t.Fatalf("failed parsing: wanted %s, got %s", out, expected)
-	}
-}
-
-func TestParserParenthesis(t *testing.T) {
 	var err error
 
 	var tests = []struct {
@@ -37,6 +12,16 @@ func TestParserParenthesis(t *testing.T) {
 		input    string
 		expected string
 	}{
+		{
+			"math comparison",
+			"21 * 2 == 42",
+			"(== (* 21 2) 42)",
+		},
+		{
+			"boolean unary comparison",
+			"true == !false",
+			"(== true (! false))",
+		},
 		{
 			"simple parenthesis",
 			"(42)",
@@ -63,29 +48,7 @@ func TestParserParenthesis(t *testing.T) {
 
 		out := FormatExpr(ast)
 		if out != test.expected {
-			t.Fatalf("failed parsing: wanted %s, got %s", out, test.expected)
+			t.Fatalf("failed parsing %s: wanted %s, got %s", test.name, out, test.expected)
 		}
-	}
-}
-
-func TestParserBooleanComparison(t *testing.T) {
-	var err error
-
-	in := "true == !false"
-
-	tokens, errs := Scan([]byte(in))
-	if errs != nil {
-		t.Fatalf("could not scan input: %s: %v", in, err)
-	}
-
-	ast, err := Parse(tokens)
-	if err != nil {
-		t.Fatalf("could not parse input: %s: %v", in, err)
-	}
-
-	out := FormatExpr(ast)
-	expected := "(== true (! false))"
-	if out != expected {
-		t.Fatalf("failed parsing: wanted %s, got %s", out, expected)
 	}
 }
