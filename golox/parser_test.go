@@ -32,7 +32,46 @@ func TestParser(t *testing.T) {
 func TestParserParenthesis(t *testing.T) {
 	var err error
 
-	in := "(21 + 21) * 2 - 42"
+	var tests = []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			"simple parenthesis",
+			"(42)",
+			"(group 42)",
+		},
+		{
+			"another parenthesis",
+			"(21 + 21) * 2 - 42",
+			"(- (* (group (+ 21 21)) 2) 42)",
+		},
+	}
+
+	for _, test := range tests {
+
+		tokens, errs := Scan([]byte(test.input))
+		if errs != nil {
+			t.Fatalf("could not scan input: %s: %v", test.input, err)
+		}
+
+		ast, err := Parse(tokens)
+		if err != nil {
+			t.Fatalf("could not parse input: %s: %v", test.input, err)
+		}
+
+		out := FormatExpr(ast)
+		if out != test.expected {
+			t.Fatalf("failed parsing: wanted %s, got %s", out, test.expected)
+		}
+	}
+}
+
+func TestParserBooleanComparison(t *testing.T) {
+	var err error
+
+	in := "true == !false"
 
 	tokens, errs := Scan([]byte(in))
 	if errs != nil {
@@ -45,5 +84,8 @@ func TestParserParenthesis(t *testing.T) {
 	}
 
 	out := FormatExpr(ast)
-	fmt.Printf("out: %v\n", out)
+	expected := "(== true (! false))"
+	if out != expected {
+		t.Fatalf("failed parsing: wanted %s, got %s", out, expected)
+	}
 }
