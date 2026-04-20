@@ -8,6 +8,13 @@ import "errors"
 // top-down parser: start at the top grammar rule (see README)
 // and work your way down to the tree leaves.
 // Each expression grammar rule becomes a function.
+
+func Parse(tokens []Token) (Expr, error) {
+	p := NewParser(tokens)
+	// TODO: what if !p.isAtEnd() ?
+	return p.expression()
+}
+
 type Parser struct {
 	Tokens  []Token
 	current int // used as a pointer to know to parse the next Token
