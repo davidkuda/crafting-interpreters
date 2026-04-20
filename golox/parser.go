@@ -41,71 +41,103 @@ func (e *ParseError) Error() string {
 // rules as functions:
 
 // rule: expression -> equality ;
-func (p *Parser) expression() Expr {
+func (p *Parser) expression() (Expr, error) {
 	return p.equality()
 }
 
 // rule: equality -> comparison ( ( "!=" | "==" ) comparison )* ;
-func (p *Parser) equality() Expr {
-	expr := p.comparison()
+func (p *Parser) equality() (Expr, error) {
+	expr, err := p.comparison()
+	if err != nil {
+		return nil, err
+	}
 
 	for p.match(BANG_EQUAL, EQUAL_EQUAL) {
 		operator := p.previous()
-		right := p.comparison()
+		right, err := p.comparison()
+		if err != nil {
+			return nil, err
+		}
 		expr = &Binary{expr, operator, right}
 	}
 
-	return expr
+	return expr, nil
 }
 
 // comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-func (p *Parser) comparison() Expr {
-	expr := p.term()
+func (p *Parser) comparison() (Expr, error) {
+	expr, err := p.term()
+	if err != nil {
+		return nil, err
+	}
 
 	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
 		operator := p.previous()
-		right := p.term()
+		right, err := p.term()
+		if err != nil {
+			return nil, err
+		}
 		expr = &Binary{expr, operator, right}
 	}
 
-	return expr
+	return expr, nil
 }
 
 // term -> factor ( ( "-" | "+" ) factor )* ;
-func (p *Parser) term() Expr {
-	expr := p.factor()
+func (p *Parser) term() (Expr, error) {
+	expr, err := p.factor()
+	if err != nil {
+		return nil, err
+	}
 
 	for p.match(MINUS, PLUS) {
 		operator := p.previous()
-		right := p.factor()
+		right, err := p.factor()
+		if err != nil {
+			return nil, err
+		}
 		expr = &Binary{expr, operator, right}
 	}
 
-	return expr
+	return expr, nil
 }
 
 // factor -> unary ( ( "/" | "*" ) unary )* ;
-func (p *Parser) factor() Expr {
-	expr := p.unary()
+func (p *Parser) factor() (Expr, error) {
+	expr, err := p.unary()
+	if err != nil {
+		return nil, err
+	}
 
 	for p.match(SLASH, STAR) {
 		operator := p.previous()
-		right := p.unary()
+		right, err := p.unary()
+		if err != nil {
+			return nil, err
+		}
 		expr = &Binary{expr, operator, right}
 	}
 
-	return expr
+	return expr, nil
 }
 
 // unary -> ( "-" | "!" ) unary | primary ;
-func (p *Parser) unary() Expr {
+func (p *Parser) unary() (Expr, error) {
 	if p.match(BANG, MINUS) {
 		operator := p.previous()
-		right := p.unary()
-		return &Unary{operator, right}
+		right, err := p.unary()
+		if err != nil {
+			return nil, err
+		}
+		return &Unary{operator, right}, nil
 	}
 
-	return p.primary()
+	expr, err := p.primary()
+	if err != nil {
+		return nil, err
+	}
+
+	return expr, nil
 }
 
 // primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
