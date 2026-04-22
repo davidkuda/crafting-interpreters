@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func Scan(b []byte) ([]Token, []*Error) {
+func Scan(b []byte) ([]Token, []error) {
 	s := NewScanner(b)
 	s.ScanTokens()
 	return s.Tokens, s.Errors
@@ -16,7 +16,7 @@ type Scanner struct {
 	// source represents the source code, e.g. `var lang = "golox";`
 	Source []byte
 	Tokens []Token
-	Errors []*Error
+	Errors []error
 
 	start   int // start of a lexeme
 	current int // current character in the loop
