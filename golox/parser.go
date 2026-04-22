@@ -1,8 +1,9 @@
 package golox
 
-import "errors"
+import (
+	"fmt"
+)
 
-// "fmt"
 
 // Recursive Descent Parsing:
 // top-down parser: start at the top grammar rule (see README)
@@ -11,7 +12,9 @@ import "errors"
 
 func Parse(tokens []Token) (Expr, error) {
 	p := NewParser(tokens)
+
 	// TODO: what if !p.isAtEnd() ?
+
 	return p.expression()
 }
 
@@ -159,12 +162,20 @@ func (p *Parser) primary() (Expr, error) {
 	}
 
 	if p.match(LEFT_PAREN) {
-		expr := p.expression()
-		p.consume(RIGHT_PAREN, "Expect ')' after expression.")
+		expr, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = p.consume(RIGHT_PAREN, "Expect ')' after expression.")
+		if err != nil {
+			return nil, err
+		}
+
 		return &Grouping{expr}, nil
 	}
 
-	return nil, errors.New("could not match primary expression")
+	return nil, &ParseError{p.peek(), "expect expression"}
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -179,6 +190,14 @@ func (p *Parser) match(tts ...TokenType) bool {
 	}
 
 	return false
+}
+
+func (p *Parser) consume(tt TokenType, message string) (Token, error) {
+	if p.check(tt) {
+		return p.advance(), nil
+	}
+
+	return Token{}, &ParseError{p.peek(), message}
 }
 
 func (p *Parser) check(tt TokenType) bool {
