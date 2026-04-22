@@ -4,7 +4,6 @@ import (
 	"fmt"
 )
 
-
 // Recursive Descent Parsing:
 // top-down parser: start at the top grammar rule (see README)
 // and work your way down to the tree leaves.
@@ -224,4 +223,22 @@ func (p *Parser) peek() Token {
 
 func (p *Parser) previous() Token {
 	return p.Tokens[p.current-1]
+}
+
+func (p *Parser) synchronize() {
+	p.advance()
+	for !p.isAtEnd() {
+		if p.previous().Type == SEMICOLON {
+			return
+		}
+
+		tt := p.peek().Type
+
+		switch tt {
+		case CLASS, FOR, FUN, IF, PRINT, RETURN, VAR, WHILE:
+			return
+		}
+
+		p.advance()
+	}
 }
