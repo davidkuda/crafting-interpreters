@@ -67,17 +67,17 @@ func (g *cli) run(code []byte) {
 	if len(errs) > 0 {
 		g.hadError = true
 		for _, err := range errs {
-			err.Report()
+			fmt.Println(err)
 		}
+		return
 	}
 
-	fmt.Println("Scanned Tokens:")
-	for _, token := range tokens {
-		fmt.Printf("   %+v\n", token)
+	ast, err := golox.Parse(tokens)
+	if err != nil {
+		g.hadError = true
+		fmt.Printf("failed parsing tokens: %v\n", err)
+		return
 	}
-
-	fmt.Println("Scanner Errors:")
-	for _, err := range errs {
-		fmt.Printf("   %+v\n", err)
-	}
+	
+	fmt.Println(ast)
 }
