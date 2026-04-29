@@ -15,25 +15,7 @@ func evaluate(expr Expr) (any, error) {
 	switch e := expr.(type) {
 
 	case *Unary:
-		right, err := evaluate(e.Right)
-		if err != nil {
-			return nil, err
-		}
-
-		switch e.Operator.Type {
-		case MINUS:
-			f, ok := right.(float64)
-			if ok {
-				return -f, nil
-			}
-			return nil, errors.New("could not evaluate")
-
-		case BANG:
-			return !isTruthy(right), nil
-		}
-
-		// unreachable:
-		return nil, errors.New("reached unreachable return")
+		return visitUnary(expr)
 
 	case *Grouping:
 		return evaluate(e.Expression)
@@ -43,6 +25,33 @@ func evaluate(expr Expr) (any, error) {
 	}
 
 	return nil, errors.New("reached end of eval without evaluating anything")
+}
+
+func visitUnary(expr Expr) (any, error) {
+	unary, ok := expr.(*Unary)
+	if !ok {
+		return nil, errors.New("not a unary")
+	}
+
+	right, err := evaluate(unary.Right)
+	if err != nil {
+		return nil, err
+	}
+
+	switch unary.Operator.Type {
+	case MINUS:
+		f, ok := right.(float64)
+		if ok {
+			return -f, nil
+		}
+		return nil, errors.New("could not evaluate")
+
+	case BANG:
+		return !isTruthy(right), nil
+	}
+
+	// unreachable:
+	return nil, errors.New("reached unreachable return")
 }
 
 // from page 101:
