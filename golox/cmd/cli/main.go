@@ -59,6 +59,7 @@ func (g *cli) runPrompt() {
 		}
 		g.run(line)
 		g.hadError = false
+		fmt.Println()
 	}
 }
 
@@ -80,4 +81,13 @@ func (g *cli) run(code []byte) {
 	}
 	
 	fmt.Println(ast)
+
+	val, err := golox.Interpret(ast)
+	if err != nil {
+		g.hadError = true
+		fmt.Printf("failed interpretation: %v\n", err)
+		return
+	}
+
+	fmt.Println(val)
 }

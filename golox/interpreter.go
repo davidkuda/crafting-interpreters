@@ -2,11 +2,11 @@ package golox
 
 import (
 	"errors"
-	"fmt"
+	// "fmt"
 )
 
-func Interpret(expression Expr) {
-	fmt.Println(expression)
+func Interpret(expression Expr) (any, error) {
+	return evaluate(expression)
 }
 
 func evaluate(expr Expr) (any, error) {
