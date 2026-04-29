@@ -53,3 +53,31 @@ func TestInterpretUnary(t *testing.T) {
 	}
 
 }
+
+func TestInterpretBinary(t *testing.T) {
+	left := Literal{float64(21)}
+	right := Literal{float64(21)}
+
+	tkn := NewToken(PLUS, "+", nil, 0)
+
+	binary := Binary{&left, tkn, &right}
+
+	val, err := evaluate(&binary)
+	if err != nil {
+		t.Fatalf("could not evaluate binary: %v (expected=42 got=%v)", err, val)
+	}
+
+	t.Log(val)
+}
+
+func TestInterpretIsEqual(t *testing.T) {
+	val := isEqual(42, "answer")
+	if val != false {
+		t.Fatal("isEqual got it wrong")
+	}
+
+	val = isEqual(42, 42)
+	if val != true {
+		t.Fatal("isEqual got it wrong")
+	}
+}
