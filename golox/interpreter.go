@@ -2,8 +2,22 @@ package golox
 
 import (
 	"errors"
-	// "fmt"
+	"fmt"
 )
+
+type InterpretError struct {
+	Token Token
+	Msg   string
+}
+
+func (e InterpretError) Error() string {
+	return fmt.Sprintf("[line %d] Error at \"%s\": %s",
+		e.Token.Line, e.Token.Lexeme, e.Msg)
+}
+
+func NewInterpretError(token Token, msg string) InterpretError {
+	return InterpretError{token, msg}
+}
 
 func Interpret(expression Expr) (any, error) {
 	return evaluate(expression)
@@ -36,12 +50,12 @@ func visitBinary(expr Expr) (any, error) {
 
 	left, err := evaluate(binary.Left)
 	if err != nil {
-		return nil, errors.New("something wrong")
+		return nil, err
 	}
 
 	right, err := evaluate(binary.Right)
 	if err != nil {
-		return nil, errors.New("something wrong")
+		return nil, err
 	}
 
 	switch binary.Operator.Type {
@@ -62,83 +76,71 @@ func visitBinary(expr Expr) (any, error) {
 			return sLeft + sRight, nil
 		}
 
-		return nil, errors.New("invalid addition")
+		return nil, NewInterpretError(binary.Operator, "invalid addition: operands must be two numbers or two strings.")
 
 	case MINUS:
 		fLeft, ok := left.(float64)
 		if !ok {
-			return nil, errors.New("subtraction: minuend not a number")
+			return nil, NewInterpretError(binary.Operator, "subtraction: minuend not a number")
 		}
 		fRight, ok := right.(float64)
 		if !ok {
-			return nil, errors.New("subtraction: subtrahend not a number")
+			return nil, NewInterpretError(binary.Operator, "subtraction: subtrahend not a number")
 		}
 		return fLeft - fRight, nil
 
 	case STAR:
 		fLeft, ok := left.(float64)
 		if !ok {
-			return nil, errors.New("multiplication: factor on left not a number")
+			return nil, NewInterpretError(binary.Operator, "multiplication: factor on left not a number")
 		}
 		fRight, ok := right.(float64)
 		if !ok {
-			return nil, errors.New("multiplication: factor on right not a number")
+			return nil, NewInterpretError(binary.Operator, "multiplication: factor on right not a number")
 		}
 		return fLeft * fRight, nil
 
 	case SLASH:
 		fLeft, ok := left.(float64)
 		if !ok {
-			return nil, errors.New("division: dividend not a number")
+			return nil, NewInterpretError(binary.Operator, "division: dividend not a number")
 		}
 		fRight, ok := right.(float64)
 		if !ok {
-			return nil, errors.New("division: divisor not a number")
+			return nil, NewInterpretError(binary.Operator, "division: divisor not a number")
 		}
 		return fLeft / fRight, nil
 
 	// comparisons:
 	case GREATER:
-		fLeft, ok := left.(float64)
-		if !ok {
-			return nil, errors.New("comparison: expected number")
-		}
-		fRight, ok := right.(float64)
-		if !ok {
-			return nil, errors.New("comparison: expected number")
+		fLeft, lok := left.(float64)
+		fRight, rok := right.(float64)
+		if !lok || !rok {
+			return nil, NewInterpretError(binary.Operator, "comparison: expected number")
 		}
 		return fLeft > fRight, nil
 
 	case GREATER_EQUAL:
-		fLeft, ok := left.(float64)
-		if !ok {
-			return nil, errors.New("comparison: expected number")
-		}
-		fRight, ok := right.(float64)
-		if !ok {
-			return nil, errors.New("comparison: expected number")
+		fLeft, lok := left.(float64)
+		fRight, rok := right.(float64)
+		if !lok || !rok {
+			return nil, NewInterpretError(binary.Operator, "comparison: expected number")
 		}
 		return fLeft >= fRight, nil
 
 	case LESS:
-		fLeft, ok := left.(float64)
-		if !ok {
-			return nil, errors.New("comparison: expected number")
-		}
-		fRight, ok := right.(float64)
-		if !ok {
-			return nil, errors.New("comparison: expected number")
+		fLeft, lok := left.(float64)
+		fRight, rok := right.(float64)
+		if !lok || !rok {
+			return nil, NewInterpretError(binary.Operator, "comparison: expected number")
 		}
 		return fLeft < fRight, nil
 
 	case LESS_EQUAL:
-		fLeft, ok := left.(float64)
-		if !ok {
-			return nil, errors.New("comparison: expected number")
-		}
-		fRight, ok := right.(float64)
-		if !ok {
-			return nil, errors.New("comparison: expected number")
+		fLeft, lok := left.(float64)
+		fRight, rok := right.(float64)
+		if !lok || !rok {
+			return nil, NewInterpretError(binary.Operator, "comparison: expected number")
 		}
 		return fLeft <= fRight, nil
 
@@ -149,10 +151,10 @@ func visitBinary(expr Expr) (any, error) {
 		return isEqual(left, right), nil
 
 	default:
-		return nil, errors.New("invalid binary")
+		return nil, NewInterpretError(binary.Operator, "invalid binary")
 	}
 
-	return nil, errors.New("invalid binary")
+	return nil, NewInterpretError(binary.Operator, "invalid binary")
 }
 
 func visitUnary(expr Expr) (any, error) {
