@@ -11,7 +11,8 @@ import (
 )
 
 type cli struct {
-	hadError bool
+	hadError        bool
+	hadRuntimeError bool
 }
 
 func main() {
@@ -40,6 +41,12 @@ func (g *cli) runFile(path string) {
 	if g.hadError {
 		os.Exit(65)
 	}
+
+	if g.hadRuntimeError {
+		os.Exit(70)
+	}
+
+	os.Exit(0)
 }
 
 func (g *cli) runPrompt() {
@@ -59,7 +66,7 @@ func (g *cli) runPrompt() {
 		}
 		g.run(line)
 		g.hadError = false
-		fmt.Println()
+		g.hadRuntimeError = false
 	}
 }
 
