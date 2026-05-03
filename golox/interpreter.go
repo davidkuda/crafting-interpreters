@@ -153,8 +153,6 @@ func visitBinary(expr Expr) (any, error) {
 	default:
 		return nil, NewInterpretError(binary.Operator, "invalid binary")
 	}
-
-	return nil, NewInterpretError(binary.Operator, "invalid binary")
 }
 
 func visitUnary(expr Expr) (any, error) {
@@ -174,14 +172,14 @@ func visitUnary(expr Expr) (any, error) {
 		if ok {
 			return -f, nil
 		}
-		return nil, errors.New("could not evaluate")
+		return nil, NewInterpretError(unary.Operator, "minus unary: expected number")
 
 	case BANG:
 		return !isTruthy(right), nil
-	}
 
-	// unreachable:
-	return nil, errors.New("reached unreachable return")
+	default:
+		return nil, NewInterpretError(unary.Operator, "invalid unary expression")
+	}
 }
 
 // from page 101:
