@@ -84,17 +84,20 @@ func (g *cli) run(code []byte) {
 	if err != nil {
 		g.hadError = true
 		fmt.Printf("failed parsing tokens: %v\n", err)
+		fmt.Println()
 		return
 	}
-	
-	fmt.Println(ast)
+
+	fmt.Printf("%-21s %v\n", "abstract syntax tree:", ast)
 
 	val, err := golox.Interpret(ast)
 	if err != nil {
-		g.hadError = true
+		g.hadRuntimeError = true
 		fmt.Printf("failed interpretation: %v\n", err)
+		fmt.Println()
 		return
 	}
 
-	fmt.Println(val)
+	fmt.Printf("%-21s %v\n", "interpretation:", val)
+	fmt.Println()
 }
