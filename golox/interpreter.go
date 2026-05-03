@@ -103,11 +103,14 @@ func visitBinary(expr Expr) (any, error) {
 	case SLASH:
 		fLeft, ok := left.(float64)
 		if !ok {
-			return nil, NewInterpretError(binary.Operator, "division: dividend not a number")
+			return nil, NewInterpretError(binary.Operator, "invalid division: dividend not a number")
 		}
 		fRight, ok := right.(float64)
 		if !ok {
-			return nil, NewInterpretError(binary.Operator, "division: divisor not a number")
+			return nil, NewInterpretError(binary.Operator, "invalid division: divisor not a number")
+		}
+		if fRight == float64(0) {
+			return nil, NewInterpretError(binary.Operator, "invalid division: divisor is 0")
 		}
 		return fLeft / fRight, nil
 
