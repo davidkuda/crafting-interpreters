@@ -9,12 +9,20 @@ import (
 // and work your way down to the tree leaves.
 // Each expression grammar rule becomes a function.
 
-func Parse(tokens []Token) (Expr, error) {
+func Parse(tokens []Token) ([]Stmt, error) {
+	statements := make([]Stmt, 0)
 	p := NewParser(tokens)
 
 	// TODO: what if !p.isAtEnd() ?
+	for !p.isAtEnd() {
+		statement, err := p.statement()
+		if err != nil {
+			// 
+		}
+		statements = append(statements, statement)
+	}
 
-	return p.expression()
+	return statements, nil
 }
 
 type Parser struct {
@@ -41,6 +49,35 @@ func (e *ParseError) Error() string {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // rules as functions:
+
+func (p *Parser) statement() (Stmt, error) {
+	if p.match(PRINT) {
+		return p.printStatement()
+	}
+	return p.expressionStatement()
+}
+
+func (p *Parser) printStatement() (Stmt, error) {
+	val, err := p.expression()
+	if err != nil {
+		return Stmt{}, err
+	}
+
+	p.consume(SEMICOLON, "Expect ';' after value.")
+
+	return Stmt{Print: val}, nil
+}
+
+func (p *Parser) expressionStatement() (Stmt, error) {
+	val, err := p.expression()
+	if err != nil {
+		return Stmt{}, err
+	}
+
+	p.consume(SEMICOLON, "Expect ';' after value.")
+
+	return Stmt{Expression: val}, nil
+}
 
 // rule: expression -> equality ;
 func (p *Parser) expression() (Expr, error) {
