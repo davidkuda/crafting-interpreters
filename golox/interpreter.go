@@ -19,8 +19,56 @@ func NewInterpretError(token Token, msg string) InterpretError {
 	return InterpretError{token, msg}
 }
 
-func Interpret(expression Expr) (any, error) {
-	return evaluate(expression)
+func Interpret(statements []Stmt) error {
+	var err error
+
+	for _, statement := range statements {
+		err = execute(statement)
+		if err != nil {
+			return fmt.Errorf("cant execute: %v", err)
+		}
+	}
+	return nil
+}
+
+func execute(statement Stmt) error {
+	if statement.Print != nil {
+		return visitPrintStmt(statement)
+	}
+
+	if statement.Expression != nil {
+		return visitExpressionStmt(statement)
+	}
+
+	return errors.New("no expression in statement")
+}
+
+func visitExpressionStmt(stmt Stmt) error {
+	if stmt.Expression == nil {
+		return errors.New("expected stmt.Expression")
+	}
+
+	_, err := evaluate(stmt.Expression)
+	if err != nil {
+		return fmt.Errorf("can't evaluate stmt.Expression: %v", err)
+	}
+
+	return nil
+}
+
+func visitPrintStmt(stmt Stmt) error {
+	val, err := evaluate(stmt.Print)
+	if stmt.Print == nil {
+		return errors.New("expected stmt.Print")
+	}
+
+	if err != nil {
+		fmt.Errorf("can't evaluate stmt.Print: %v", err)
+	}
+
+	fmt.Println(val)
+
+	return nil
 }
 
 func evaluate(expr Expr) (any, error) {

@@ -65,6 +65,7 @@ func (g *cli) runPrompt() {
 			os.Exit(1)
 		}
 		g.run(line)
+		fmt.Println()
 		g.hadError = false
 		g.hadRuntimeError = false
 	}
@@ -79,6 +80,7 @@ func (g *cli) run(code []byte) {
 		}
 		return
 	}
+	fmt.Println(tokens)
 
 	ast, err := golox.Parse(tokens)
 	if err != nil {
@@ -87,17 +89,13 @@ func (g *cli) run(code []byte) {
 		fmt.Println()
 		return
 	}
+	fmt.Println(ast)
 
-	fmt.Printf("%-21s %v\n", "abstract syntax tree:", ast)
-
-	val, err := golox.Interpret(ast)
+	err = golox.Interpret(ast)
 	if err != nil {
 		g.hadRuntimeError = true
 		fmt.Printf("failed interpretation: %v\n", err)
 		fmt.Println()
 		return
 	}
-
-	fmt.Printf("%-21s %v\n", "interpretation:", val)
-	fmt.Println()
 }
