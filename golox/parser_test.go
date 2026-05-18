@@ -41,12 +41,29 @@ func TestParser(t *testing.T) {
 			t.Fatalf("could not scan input: %s: %v", test.input, err)
 		}
 
-		ast, err := Parse(tokens)
+		stmts, err := Parse(tokens)
 		if err != nil {
 			t.Fatalf("could not parse input: %s: %v", test.input, err)
 		}
 
-		out := FormatExpr(ast)
+		if len(stmts) != 1 {
+			t.Fatalf("expected 1 statement, got %d statement", len(stmts))
+		}
+
+		s := stmts[0]
+
+		stmt, ok := s.(*exprStmt)
+		if !ok {
+			t.Fatal("not an exprStmt\n")
+		}
+
+		if stmt.Expression == nil {
+			t.Fatal("expected exprStmt.Expression")
+		}
+
+		expr := stmt.Expression
+
+		out := FormatExpr(expr)
 		if out != test.expected {
 			t.Fatalf("failed parsing %s: wanted %s, got %s", test.name, out, test.expected)
 		}
