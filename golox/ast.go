@@ -66,6 +66,16 @@ func (u *Unary) String() string {
 	)
 }
 
+type Variable struct {
+	Name Token
+}
+
+func (*Variable) exprNode() {}
+
+func (v *Variable) String() string {
+	return fmt.Sprintf("(var %s)", v.Name.Lexeme)
+}
+
 func FormatExprStringer(expr Expr) string {
 	switch e := expr.(type) {
 	case *Binary:

@@ -111,3 +111,32 @@ factor     -> unary
 Notice how it's similar to unary. (unary is in fact right-associative.)
 
 Problem is its left-recursiveness. This will require a different technique to parse than what we are going to use for golox. therefore, we use the second expression rule.
+
+
+### Evolution after chapter 8 Statements and State
+
+The middle of the grammar tree stays the same.
+
+At the top, we prepend:
+
+```
+program     -> decleration* EOF ;
+declaration -> varDecl | statement ;
+varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
+statement   -> exprStmt | printStmt ;
+```
+
+`declaration` for now only contains variable declarations or statements. Later, we'll add functions and classes.
+
+At the bottom, we add one line to `primary`:
+
+```
+primary    -> NUMBER
+            | STRING
+            | "true"
+            | "false"
+            | "nil"
+            | "(" expression ")
+            | IDENTIFIER
+            ;
+```

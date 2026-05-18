@@ -13,11 +13,10 @@ func Parse(tokens []Token) ([]Stmt, error) {
 	statements := make([]Stmt, 0)
 	p := NewParser(tokens)
 
-	// TODO: what if !p.isAtEnd() ?
 	for !p.isAtEnd() {
-		statement, err := p.statement()
+		statement, err := p.declaration()
 		if err != nil {
-			// 
+			return nil, fmt.Errorf("could not parse: %v", err)
 		}
 		statements = append(statements, statement)
 	}
@@ -50,6 +49,46 @@ func (e *ParseError) Error() string {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // rules as functions:
 
+func (p *Parser) declaration() (Stmt, error) {
+	if p.match(VAR) {
+		vd, err := p.varDeclaration()
+		if err != nil {
+			return nil, err
+		}
+		return vd, nil
+	}
+
+	stmt, err := p.statement()
+	if err != nil {
+		// p.decleration gets called repeatedly in Parse.
+		// when entering panic mode, go to the beginning
+		// of the next stmt or declaration and continue
+		// parsing.
+		p.synchronize()
+	}
+
+	return stmt, nil
+}
+
+func (p *Parser) varDeclaration() (Stmt, error) {
+	name, err := p.consume(IDENTIFIER, "Expect variable name.")
+	if err != nil {
+		return nil, err
+	}
+
+	var initializer Expr
+	if p.match(EQUAL) {
+		initializer, err = p.expression()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	p.consume(SEMICOLON, "Expect ';' after variable declaration.")
+
+	return &varStmt{name, initializer}, nil
+}
+
 func (p *Parser) statement() (Stmt, error) {
 	if p.match(PRINT) {
 		return p.printStatement()
@@ -60,23 +99,23 @@ func (p *Parser) statement() (Stmt, error) {
 func (p *Parser) printStatement() (Stmt, error) {
 	val, err := p.expression()
 	if err != nil {
-		return Stmt{}, err
+		return nil, err
 	}
 
 	p.consume(SEMICOLON, "Expect ';' after value.")
 
-	return Stmt{Print: val}, nil
+	return &printStmt{Expression: val}, nil
 }
 
 func (p *Parser) expressionStatement() (Stmt, error) {
 	val, err := p.expression()
 	if err != nil {
-		return Stmt{}, err
+		return nil, err
 	}
 
 	p.consume(SEMICOLON, "Expect ';' after value.")
 
-	return Stmt{Expression: val}, nil
+	return &exprStmt{Expression: val}, nil
 }
 
 // rule: expression -> equality ;
@@ -195,6 +234,10 @@ func (p *Parser) primary() (Expr, error) {
 
 	if p.match(NUMBER, STRING) {
 		return &Literal{p.previous().Literal}, nil
+	}
+
+	if p.match(IDENTIFIER) {
+		return &Variable{p.previous()}, nil
 	}
 
 	if p.match(LEFT_PAREN) {

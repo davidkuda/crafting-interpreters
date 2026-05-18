@@ -16,9 +16,9 @@ type printStmt struct {
 
 func (*printStmt) stmt() {}
 
-type variable struct {
+type varStmt struct {
 	name        Token
 	initializer Expr
 }
 
-func (*variable) stmt() {}
+func (*varStmt) stmt() {}
