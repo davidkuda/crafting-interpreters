@@ -32,20 +32,25 @@ func Interpret(statements []Stmt) error {
 }
 
 func execute(statement Stmt) error {
-	if statement.Print != nil {
-		return visitPrintStmt(statement)
-	}
-
-	if statement.Expression != nil {
+	switch statement.(type) {
+	case *exprStmt:
 		return visitExpressionStmt(statement)
+
+	case *printStmt:
+		return visitPrintStmt(statement)
 	}
 
 	return errors.New("no expression in statement")
 }
 
-func visitExpressionStmt(stmt Stmt) error {
+func visitExpressionStmt(s Stmt) error {
+	stmt, ok := s.(*exprStmt)
+	if !ok {
+		return errors.New("not an exprStmt")
+	}
+
 	if stmt.Expression == nil {
-		return errors.New("expected stmt.Expression")
+		return errors.New("expected exprStmt.Expression")
 	}
 
 	_, err := evaluate(stmt.Expression)
@@ -56,11 +61,17 @@ func visitExpressionStmt(stmt Stmt) error {
 	return nil
 }
 
-func visitPrintStmt(stmt Stmt) error {
-	val, err := evaluate(stmt.Print)
-	if stmt.Print == nil {
-		return errors.New("expected stmt.Print")
+func visitPrintStmt(s Stmt) error {
+	stmt, ok := s.(*printStmt)
+	if !ok {
+		return errors.New("not a printStmt")
 	}
+
+	if stmt.Expression == nil {
+		return errors.New("expected stmt.Expression")
+	}
+
+	val, err := evaluate(stmt.Expression)
 
 	if err != nil {
 		fmt.Errorf("can't evaluate stmt.Print: %v", err)

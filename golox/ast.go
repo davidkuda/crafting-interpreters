@@ -5,11 +5,6 @@ import (
 	"strconv"
 )
 
-type Stmt struct {
-	Expression Expr
-	Print      Expr
-}
-
 // Lehrstück: https://github.com/golang/go/blob/6614616b7576a8011053c4b50fbb5e64d469837b/src/go/ast/ast.go#L42
 type Expr interface {
 	exprNode()
