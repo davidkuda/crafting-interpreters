@@ -41,3 +41,20 @@ func ReportGoloxError(token Token, message string) {
 func (e *GoloxError) Report() {
 	fmt.Printf("[line %d] Error %s: %s\n", e.line, e.where, e.message)
 }
+
+type RuntimeError struct {
+	Token   Token
+	Message string
+}
+
+func NewRuntimeError(tkn Token, msg string) *RuntimeError {
+	return &RuntimeError{
+		Token:   tkn,
+		Message: msg,
+	}
+}
+
+func (e *RuntimeError) Error() string {
+	return fmt.Sprintf("runtime error: line %d: %s: %s",
+		e.Token.Line, e.Token.Lexeme, e.Message)
+}
