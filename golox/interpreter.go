@@ -6,8 +6,9 @@ import (
 )
 
 type InterpretError struct {
-	Token Token
-	Msg   string
+	environment Environment
+	Token       Token
+	Msg         string
 }
 
 func (e InterpretError) Error() string {
@@ -16,7 +17,10 @@ func (e InterpretError) Error() string {
 }
 
 func NewInterpretError(token Token, msg string) InterpretError {
-	return InterpretError{token, msg}
+	return InterpretError{
+		Token: token,
+		Msg:   msg,
+	}
 }
 
 func Interpret(statements []Stmt) error {
