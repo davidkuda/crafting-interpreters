@@ -80,7 +80,7 @@ func (g *cli) run(code []byte) {
 		}
 		return
 	}
-	fmt.Printf("tokens: %+v\n", tokens)
+	// fmt.Printf("tokens: %+v\n", tokens)
 
 	ast, err := golox.Parse(tokens)
 	if err != nil {
@@ -89,11 +89,13 @@ func (g *cli) run(code []byte) {
 		fmt.Println()
 		return
 	}
-	for _, declaration := range ast {
-		fmt.Printf("ast:    %+v\n", declaration)
-	}
+	// for _, declaration := range ast {
+	// 	fmt.Printf("ast:    %+v\n", declaration)
+	// }
 
-	err = golox.Interpret(ast)
+	interpreter := golox.NewInterpreter()
+
+	err = interpreter.Interpret(ast)
 	if err != nil {
 		g.hadRuntimeError = true
 		fmt.Printf("failed interpretation: %v\n", err)

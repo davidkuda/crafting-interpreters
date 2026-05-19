@@ -1,3 +1,7 @@
+// TODO: rename this file to expr.go
+// and maybe use BinaryExpr
+// and maybe make types private binaryExpr
+
 package golox
 
 import (

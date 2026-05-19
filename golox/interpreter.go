@@ -5,6 +5,16 @@ import (
 	"fmt"
 )
 
+type Interpreter struct {
+	environment Environment
+}
+
+func NewInterpreter() Interpreter {
+	return Interpreter{
+		environment: NewEnvironment(),
+	}
+}
+
 type InterpretError struct {
 	environment Environment
 	Token       Token
@@ -23,11 +33,11 @@ func NewInterpretError(token Token, msg string) InterpretError {
 	}
 }
 
-func Interpret(statements []Stmt) error {
+func (i *Interpreter) Interpret(statements []Stmt) error {
 	var err error
 
 	for _, statement := range statements {
-		err = execute(statement)
+		err = i.execute(statement)
 		if err != nil {
 			return fmt.Errorf("cant execute: %v", err)
 		}
@@ -35,19 +45,22 @@ func Interpret(statements []Stmt) error {
 	return nil
 }
 
-func execute(statement Stmt) error {
+func (i *Interpreter) execute(statement Stmt) error {
 	switch statement.(type) {
 	case *exprStmt:
-		return visitExpressionStmt(statement)
+		return i.visitExpressionStmt(statement)
 
 	case *printStmt:
-		return visitPrintStmt(statement)
+		return i.visitPrintStmt(statement)
+
+	case *varStmt:
+		return i.visitVarStmt(statement)
 	}
 
 	return errors.New("no expression in statement")
 }
 
-func visitExpressionStmt(s Stmt) error {
+func (i *Interpreter) visitExpressionStmt(s Stmt) error {
 	stmt, ok := s.(*exprStmt)
 	if !ok {
 		return errors.New("not an exprStmt")
@@ -57,7 +70,7 @@ func visitExpressionStmt(s Stmt) error {
 		return errors.New("expected exprStmt.Expression")
 	}
 
-	_, err := evaluate(stmt.Expression)
+	_, err := i.evaluate(stmt.Expression)
 	if err != nil {
 		return fmt.Errorf("can't evaluate stmt.Expression: %v", err)
 	}
@@ -65,7 +78,7 @@ func visitExpressionStmt(s Stmt) error {
 	return nil
 }
 
-func visitPrintStmt(s Stmt) error {
+func (i *Interpreter) visitPrintStmt(s Stmt) error {
 	stmt, ok := s.(*printStmt)
 	if !ok {
 		return errors.New("not a printStmt")
@@ -75,7 +88,7 @@ func visitPrintStmt(s Stmt) error {
 		return errors.New("expected stmt.Expression")
 	}
 
-	val, err := evaluate(stmt.Expression)
+	val, err := i.evaluate(stmt.Expression)
 
 	if err != nil {
 		fmt.Errorf("can't evaluate stmt.Print: %v", err)
@@ -86,37 +99,64 @@ func visitPrintStmt(s Stmt) error {
 	return nil
 }
 
-func evaluate(expr Expr) (any, error) {
+func (i *Interpreter) visitVarStmt(s Stmt) error {
+	var err error
+
+	stmt, ok := s.(*varStmt)
+	if !ok {
+		return errors.New("not a varStmt")
+	}
+
+	var value any
+	// here is again a language design choice.
+	// e.g. if you wanted a default value for your types,
+	// you could add it here.
+	if stmt.initializer != nil {
+		value, err = i.evaluate(stmt.initializer)
+		if err != nil {
+			return err
+		}
+	}
+
+	i.environment.Define(stmt.name.Lexeme, value)
+
+	return nil
+}
+
+func (i *Interpreter) evaluate(expr Expr) (any, error) {
 	switch e := expr.(type) {
 
 	case *Binary:
-		return visitBinary(expr)
+		return i.visitBinary(expr)
 
 	case *Unary:
-		return visitUnary(expr)
+		return i.visitUnary(expr)
 
 	case *Grouping:
-		return evaluate(e.Expression)
+		return i.evaluate(e.Expression)
 
 	case *Literal:
 		return e.Value, nil
+
+	case *Variable:
+		return i.visitVariable(expr)
 	}
 
 	return nil, errors.New("reached end of eval without evaluating anything")
 }
 
-func visitBinary(expr Expr) (any, error) {
+func (i *Interpreter) visitBinary(expr Expr) (any, error) {
 	binary, ok := expr.(*Binary)
 	if !ok {
 		return nil, errors.New("not a binary")
 	}
 
-	left, err := evaluate(binary.Left)
+	left, err := i.evaluate(binary.Left)
 	if err != nil {
 		return nil, err
 	}
 
-	right, err := evaluate(binary.Right)
+	right, err := i.evaluate(binary.Right)
 	if err != nil {
 		return nil, err
 	}
@@ -221,13 +261,13 @@ func visitBinary(expr Expr) (any, error) {
 	}
 }
 
-func visitUnary(expr Expr) (any, error) {
+func (i *Interpreter) visitUnary(expr Expr) (any, error) {
 	unary, ok := expr.(*Unary)
 	if !ok {
 		return nil, errors.New("not a unary")
 	}
 
-	right, err := evaluate(unary.Right)
+	right, err := i.evaluate(unary.Right)
 	if err != nil {
 		return nil, err
 	}
@@ -246,6 +286,14 @@ func visitUnary(expr Expr) (any, error) {
 	default:
 		return nil, NewInterpretError(unary.Operator, "invalid unary expression")
 	}
+}
+
+func (i *Interpreter) visitVariable(expr Expr) (any, error) {
+	variableExpr, ok := expr.(*Variable)
+	if !ok {
+		return nil, errors.New("not a variable expression")
+	}
+	return i.environment.Get(variableExpr.Name)
 }
 
 // from page 101:
