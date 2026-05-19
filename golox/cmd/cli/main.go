@@ -11,12 +11,14 @@ import (
 )
 
 type cli struct {
+	interpreter     golox.Interpreter
 	hadError        bool
 	hadRuntimeError bool
 }
 
 func main() {
-	golox := cli{}
+	program := cli{}
+	program.interpreter = golox.NewInterpreter()
 
 	if len(os.Args) > 2 {
 		fmt.Println("usage: golox [script]")
@@ -24,10 +26,10 @@ func main() {
 	} else if len(os.Args) == 2 {
 		// run a script written in a file:
 		filePath := os.Args[1]
-		golox.runFile(filePath)
+		program.runFile(filePath)
 	} else {
 		// start a REPL:
-		golox.runPrompt()
+		program.runPrompt()
 	}
 }
 
@@ -93,9 +95,7 @@ func (g *cli) run(code []byte) {
 	// 	fmt.Printf("ast:    %+v\n", declaration)
 	// }
 
-	interpreter := golox.NewInterpreter()
-
-	err = interpreter.Interpret(ast)
+	err = g.interpreter.Interpret(ast)
 	if err != nil {
 		g.hadRuntimeError = true
 		fmt.Printf("failed interpretation: %v\n", err)
