@@ -40,6 +40,13 @@ type ParseError struct {
 	Msg   string
 }
 
+func NewParseError(token Token, msg string) *ParseError {
+	return &ParseError{
+		Token: token,
+		Msg:   msg,
+	}
+}
+
 // implement error interface (see https://go.dev/tour/methods/19 as reference):
 func (e *ParseError) Error() string {
 	return fmt.Sprintf("[line %d] Error at \"%s\": %s",
@@ -118,9 +125,45 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 	return &exprStmt{Expression: val}, nil
 }
 
-// rule: expression -> equality ;
+// rule: expression -> assignment ;
 func (p *Parser) expression() (Expr, error) {
-	return p.equality()
+	return p.assignment()
+}
+
+// rule: assignment -> IDENTIFIER "=" assignment | equality ;
+func (p *Parser) assignment() (Expr, error) {
+	var err error
+
+	expr, err := p.equality()
+	if err != nil {
+		return nil, err
+	}
+
+	if p.match(EQUAL) {
+		equals := p.previous()
+		value, err := p.assignment()
+		if err != nil {
+			return nil, err
+		}
+
+		if v, ok := expr.(*variableExpr); ok {
+			name := v.Name
+			return &assignExpr{name, value}, nil
+		}
+
+		// TODO: the book remarks:
+		// "we report an error but we don't throw it
+		// because the parser isn't in a confused state
+		// where we need to go into panic mode and sync."
+		// well, I do "throw" the error here...
+		// how to solve this? Ideas: either just report here and
+		// continue, or report at the top of the stack.
+		// let's see how to deal with this once I see the problem
+		// during experimentation / testing.
+		return nil, NewParseError(equals, "invalid assignment target")
+	}
+
+	return expr, nil
 }
 
 // rule: equality -> comparison ( ( "!=" | "==" ) comparison )* ;

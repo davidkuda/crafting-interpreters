@@ -28,7 +28,20 @@ func (e *Environment) Get(name Token) (any, error) {
 	// you could return a default value, a RuntimeError, a SyntaxError...
 	// we return a RuntimeError.
 	if !ok {
-		return nil, NewRuntimeError(name, "undefined variable: " + name.Lexeme)
+		return nil, NewRuntimeError(name, "undefined variable: "+name.Lexeme)
 	}
 	return val, nil
+}
+
+// key difference between assignment and definition is that
+// assignment is not allowed to create a new variable.
+func (e *Environment) Assign(name Token, value any) error {
+	_, ok := e.values[name.Lexeme]
+	if !ok {
+		return NewRuntimeError(name, "undefined variable: "+name.Lexeme)
+	}
+
+	e.values[name.Lexeme] = value
+
+	return nil
 }

@@ -11,6 +11,17 @@ type Expr interface {
 	fmt.Stringer
 }
 
+type assignExpr struct {
+	name  Token
+	value Expr
+}
+
+func (*assignExpr) exprNode() {}
+
+func (a *assignExpr) String() string {
+	return fmt.Sprintf("%s=%s", a.name.Lexeme, a.value)
+}
+
 type binaryExpr struct {
 	Left     Expr
 	Operator Token

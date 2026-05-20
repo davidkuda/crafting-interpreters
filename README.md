@@ -140,3 +140,14 @@ primary    -> NUMBER
             | IDENTIFIER
             ;
 ```
+
+### 8.4.1 Assignment
+
+```
+expression -> assignment ;
+
+assignment -> IDENTIFIER "=" assignment
+              | equality
+              ;
+
+```

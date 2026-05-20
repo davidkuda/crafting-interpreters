@@ -140,6 +140,9 @@ func (i *Interpreter) evaluate(expr Expr) (any, error) {
 
 	case *variableExpr:
 		return i.visitVariable(expr)
+
+	case *assignExpr:
+		return i.visitAssignExpr(expr)
 	}
 
 	return nil, errors.New("reached end of eval without evaluating anything")
@@ -294,6 +297,21 @@ func (i *Interpreter) visitVariable(expr Expr) (any, error) {
 		return nil, errors.New("not a variable expression")
 	}
 	return i.environment.Get(variableExpr.Name)
+}
+
+func (i *Interpreter) visitAssignExpr(expr Expr) (any, error) {
+	a, ok := expr.(*assignExpr)
+	if !ok {
+		return nil, errors.New("not a variable expression")
+	}
+	value, err := i.evaluate(a.value)
+	if err != nil {
+		return nil, err
+	}
+
+	i.environment.Assign(a.name, value)
+
+	return value, nil
 }
 
 // from page 101:
