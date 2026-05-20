@@ -1,7 +1,3 @@
-// TODO: rename this file to expr.go
-// and maybe use BinaryExpr
-// and maybe make types private binaryExpr
-
 package golox
 
 import (
@@ -15,15 +11,15 @@ type Expr interface {
 	fmt.Stringer
 }
 
-type Binary struct {
+type binaryExpr struct {
 	Left     Expr
 	Operator Token
 	Right    Expr
 }
 
-func (*Binary) exprNode() {}
+func (*binaryExpr) exprNode() {}
 
-func (b *Binary) String() string {
+func (b *binaryExpr) String() string {
 	return fmt.Sprintf(
 		"(%s %s %s)",
 		b.Operator.Lexeme,
@@ -32,37 +28,37 @@ func (b *Binary) String() string {
 	)
 }
 
-type Grouping struct {
+type groupingExpr struct {
 	Expression Expr
 }
 
-func (*Grouping) exprNode() {}
+func (*groupingExpr) exprNode() {}
 
-func (g *Grouping) String() string {
+func (g *groupingExpr) String() string {
 	return fmt.Sprintf(
 		"(group %v)",
 		g.Expression.String(),
 	)
 }
 
-type Literal struct {
+type literalExpr struct {
 	Value any
 }
 
-func (*Literal) exprNode() {}
+func (*literalExpr) exprNode() {}
 
-func (l *Literal) String() string {
+func (l *literalExpr) String() string {
 	return literalToString(l.Value)
 }
 
-type Unary struct {
+type unaryExpr struct {
 	Operator Token
 	Right    Expr
 }
 
-func (*Unary) exprNode() {}
+func (*unaryExpr) exprNode() {}
 
-func (u *Unary) String() string {
+func (u *unaryExpr) String() string {
 	return fmt.Sprintf(
 		"(%s %s)",
 		u.Operator.Lexeme,
@@ -70,28 +66,28 @@ func (u *Unary) String() string {
 	)
 }
 
-type Variable struct {
+type variableExpr struct {
 	Name Token
 }
 
-func (*Variable) exprNode() {}
+func (*variableExpr) exprNode() {}
 
-func (v *Variable) String() string {
+func (v *variableExpr) String() string {
 	return fmt.Sprintf("(var %s)", v.Name.Lexeme)
 }
 
 func FormatExprStringer(expr Expr) string {
 	switch e := expr.(type) {
-	case *Binary:
+	case *binaryExpr:
 		return e.String()
 
-	case *Grouping:
+	case *groupingExpr:
 		return e.String()
 
-	case *Literal:
+	case *literalExpr:
 		return e.String()
 
-	case *Unary:
+	case *unaryExpr:
 		return e.String()
 
 	default:
@@ -101,7 +97,7 @@ func FormatExprStringer(expr Expr) string {
 
 func FormatExpr(expr Expr) string {
 	switch e := expr.(type) {
-	case *Binary:
+	case *binaryExpr:
 		return fmt.Sprintf(
 			"(%s %s %s)",
 			e.Operator.Lexeme,
@@ -109,16 +105,16 @@ func FormatExpr(expr Expr) string {
 			FormatExpr(e.Right),
 		)
 
-	case *Grouping:
+	case *groupingExpr:
 		return fmt.Sprintf(
 			"(group %v)",
 			FormatExpr(e.Expression),
 		)
 
-	case *Literal:
+	case *literalExpr:
 		return literalToString(e.Value)
 
-	case *Unary:
+	case *unaryExpr:
 		return fmt.Sprintf(
 			"(%s %s)",
 			e.Operator.Lexeme,

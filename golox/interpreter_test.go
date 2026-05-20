@@ -5,7 +5,7 @@ import (
 )
 
 func TestInterpretLiteral(t *testing.T) {
-	expr := Literal{42}
+	expr := literalExpr{42}
 	val, err := evaluate(&expr)
 	if err != nil {
 		t.Fatalf("could not evaluate expr=%s: %v", expr, err)
@@ -17,21 +17,21 @@ func TestInterpretLiteral(t *testing.T) {
 
 func TestInterpretUnary(t *testing.T) {
 	var tests = []struct {
-		input    Unary
+		input    unaryExpr
 		expected any
 	}{
 		{
-			Unary{NewToken(BANG, "!", nil, 0), &Literal{true}},
+			unaryExpr{NewToken(BANG, "!", nil, 0), &literalExpr{true}},
 			false,
 		},
 		{
-			Unary{NewToken(BANG, "!", nil, 0), &Literal{false}},
+			unaryExpr{NewToken(BANG, "!", nil, 0), &literalExpr{false}},
 			true,
 		},
 		{
-			Unary{
+			unaryExpr{
 				NewToken(MINUS, "-", nil, 0),
-				&Literal{float64(42)},
+				&literalExpr{float64(42)},
 			},
 			-float64(42),
 		},
@@ -55,12 +55,12 @@ func TestInterpretUnary(t *testing.T) {
 }
 
 func TestInterpretBinary(t *testing.T) {
-	left := Literal{float64(21)}
-	right := Literal{float64(21)}
+	left := literalExpr{float64(21)}
+	right := literalExpr{float64(21)}
 
 	tkn := NewToken(PLUS, "+", nil, 0)
 
-	binary := Binary{&left, tkn, &right}
+	binary := binaryExpr{&left, tkn, &right}
 
 	val, err := evaluate(&binary)
 	if err != nil {

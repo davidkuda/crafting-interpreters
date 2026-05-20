@@ -126,19 +126,19 @@ func (i *Interpreter) visitVarStmt(s Stmt) error {
 func (i *Interpreter) evaluate(expr Expr) (any, error) {
 	switch e := expr.(type) {
 
-	case *Binary:
+	case *binaryExpr:
 		return i.visitBinary(expr)
 
-	case *Unary:
+	case *unaryExpr:
 		return i.visitUnary(expr)
 
-	case *Grouping:
+	case *groupingExpr:
 		return i.evaluate(e.Expression)
 
-	case *Literal:
+	case *literalExpr:
 		return e.Value, nil
 
-	case *Variable:
+	case *variableExpr:
 		return i.visitVariable(expr)
 	}
 
@@ -146,7 +146,7 @@ func (i *Interpreter) evaluate(expr Expr) (any, error) {
 }
 
 func (i *Interpreter) visitBinary(expr Expr) (any, error) {
-	binary, ok := expr.(*Binary)
+	binary, ok := expr.(*binaryExpr)
 	if !ok {
 		return nil, errors.New("not a binary")
 	}
@@ -262,7 +262,7 @@ func (i *Interpreter) visitBinary(expr Expr) (any, error) {
 }
 
 func (i *Interpreter) visitUnary(expr Expr) (any, error) {
-	unary, ok := expr.(*Unary)
+	unary, ok := expr.(*unaryExpr)
 	if !ok {
 		return nil, errors.New("not a unary")
 	}
@@ -289,7 +289,7 @@ func (i *Interpreter) visitUnary(expr Expr) (any, error) {
 }
 
 func (i *Interpreter) visitVariable(expr Expr) (any, error) {
-	variableExpr, ok := expr.(*Variable)
+	variableExpr, ok := expr.(*variableExpr)
 	if !ok {
 		return nil, errors.New("not a variable expression")
 	}

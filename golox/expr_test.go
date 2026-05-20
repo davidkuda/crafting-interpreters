@@ -5,14 +5,14 @@ import (
 )
 
 func TestAST(t *testing.T) {
-	expr := &Binary{
-		Left: &Unary{
+	expr := &binaryExpr{
+		Left: &unaryExpr{
 			Operator: NewToken(MINUS, "-", nil, 1),
-			Right:    &Literal{123},
+			Right:    &literalExpr{123},
 		},
 		Operator: NewToken(STAR, "*", nil, 1),
-		Right: &Grouping{
-			Expression: &Literal{45.67},
+		Right: &groupingExpr{
+			Expression: &literalExpr{45.67},
 		},
 	}
 

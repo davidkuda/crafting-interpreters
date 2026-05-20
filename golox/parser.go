@@ -136,7 +136,7 @@ func (p *Parser) equality() (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		expr = &Binary{expr, operator, right}
+		expr = &binaryExpr{expr, operator, right}
 	}
 
 	return expr, nil
@@ -155,7 +155,7 @@ func (p *Parser) comparison() (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		expr = &Binary{expr, operator, right}
+		expr = &binaryExpr{expr, operator, right}
 	}
 
 	return expr, nil
@@ -174,7 +174,7 @@ func (p *Parser) term() (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		expr = &Binary{expr, operator, right}
+		expr = &binaryExpr{expr, operator, right}
 	}
 
 	return expr, nil
@@ -193,7 +193,7 @@ func (p *Parser) factor() (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		expr = &Binary{expr, operator, right}
+		expr = &binaryExpr{expr, operator, right}
 	}
 
 	return expr, nil
@@ -207,7 +207,7 @@ func (p *Parser) unary() (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &Unary{operator, right}, nil
+		return &unaryExpr{operator, right}, nil
 	}
 
 	expr, err := p.primary()
@@ -221,23 +221,23 @@ func (p *Parser) unary() (Expr, error) {
 // primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
 func (p *Parser) primary() (Expr, error) {
 	if p.match(FALSE) {
-		return &Literal{false}, nil
+		return &literalExpr{false}, nil
 	}
 
 	if p.match(TRUE) {
-		return &Literal{true}, nil
+		return &literalExpr{true}, nil
 	}
 
 	if p.match(NIL) {
-		return &Literal{nil}, nil
+		return &literalExpr{nil}, nil
 	}
 
 	if p.match(NUMBER, STRING) {
-		return &Literal{p.previous().Literal}, nil
+		return &literalExpr{p.previous().Literal}, nil
 	}
 
 	if p.match(IDENTIFIER) {
-		return &Variable{p.previous()}, nil
+		return &variableExpr{p.previous()}, nil
 	}
 
 	if p.match(LEFT_PAREN) {
@@ -251,7 +251,7 @@ func (p *Parser) primary() (Expr, error) {
 			return nil, err
 		}
 
-		return &Grouping{expr}, nil
+		return &groupingExpr{expr}, nil
 	}
 
 	return nil, &ParseError{p.peek(), "expect expression"}
