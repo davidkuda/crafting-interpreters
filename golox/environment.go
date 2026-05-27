@@ -1,12 +1,14 @@
 package golox
 
 type Environment struct {
-	values map[string]any
+	values    map[string]any
+	enclosing *Environment
 }
 
-func NewEnvironment() Environment {
+func NewEnvironment(enclosing *Environment) Environment {
 	return Environment{
-		values: make(map[string]any),
+		values:    make(map[string]any),
+		enclosing: enclosing,
 	}
 }
 
@@ -28,6 +30,10 @@ func (e *Environment) Get(name Token) (any, error) {
 	// you could return a default value, a RuntimeError, a SyntaxError...
 	// we return a RuntimeError.
 	if !ok {
+		if e.enclosing != nil {
+			return e.enclosing.Get(name)
+		}
+
 		return nil, NewRuntimeError(name, "undefined variable: "+name.Lexeme)
 	}
 	return val, nil
@@ -38,6 +44,10 @@ func (e *Environment) Get(name Token) (any, error) {
 func (e *Environment) Assign(name Token, value any) error {
 	_, ok := e.values[name.Lexeme]
 	if !ok {
+		if e.enclosing != nil {
+			e.enclosing.Assign(name, value)
+		}
+
 		return NewRuntimeError(name, "undefined variable: "+name.Lexeme)
 	}
 
