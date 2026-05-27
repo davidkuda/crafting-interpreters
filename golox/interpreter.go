@@ -11,7 +11,7 @@ type Interpreter struct {
 
 func NewInterpreter() Interpreter {
 	return Interpreter{
-		environment: NewEnvironment(),
+		environment: NewEnvironment(nil),
 	}
 }
 
@@ -47,6 +47,9 @@ func (i *Interpreter) Interpret(statements []Stmt) error {
 
 func (i *Interpreter) execute(statement Stmt) error {
 	switch statement.(type) {
+	case *blockStmt:
+		return i.visitBlockStatement(statement)
+
 	case *exprStmt:
 		return i.visitExpressionStmt(statement)
 
@@ -58,6 +61,35 @@ func (i *Interpreter) execute(statement Stmt) error {
 	}
 
 	return errors.New("no expression in statement")
+}
+
+func (i *Interpreter) visitBlockStatement(s Stmt) error {
+	block, ok := s.(*blockStmt)
+	if !ok {
+		return errors.New("not a blockStmt")
+	}
+
+	return i.executeBlock(block.statements, NewEnvironment(nil))
+
+}
+
+func (i *Interpreter) executeBlock(statements []Stmt, env Environment) error {
+	var err error
+
+	previous := i.environment
+	i.environment = env
+
+	for _, statement := range statements {
+		err = i.execute(statement)
+		if err != nil {
+			i.environment = previous
+			return err
+		}
+	}
+
+	i.environment = previous
+
+	return nil
 }
 
 func (i *Interpreter) visitExpressionStmt(s Stmt) error {

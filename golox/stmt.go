@@ -4,6 +4,12 @@ type Stmt interface {
 	stmt()
 }
 
+type blockStmt struct {
+	statements []Stmt
+}
+
+func (*blockStmt) stmt() {}
+
 type exprStmt struct {
 	Expression Expr
 }

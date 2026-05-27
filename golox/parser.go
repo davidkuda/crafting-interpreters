@@ -100,6 +100,13 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(PRINT) {
 		return p.printStatement()
 	}
+	if p.match(LEFT_BRACE) {
+		statements, err := p.block()
+		if err != nil {
+			return nil, err
+		}
+		return &blockStmt{statements: statements}, nil
+	}
 	return p.expressionStatement()
 }
 
@@ -112,6 +119,28 @@ func (p *Parser) printStatement() (Stmt, error) {
 	p.consume(SEMICOLON, "Expect ';' after value.")
 
 	return &printStmt{Expression: val}, nil
+}
+
+func (p *Parser) block() ([]Stmt, error) {
+	var err error
+
+	statements := make([]Stmt, 0)
+
+	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
+		statement, err := p.declaration()
+		// TODO: how does this play together with synchronize?
+		// eventually find out with test cases...
+		if err != nil {
+			return nil, err
+		}
+		statements = append(statements, statement)
+	}
+
+	_, err = p.consume(RIGHT_BRACE, "Expect '}' after block.")
+	if err != nil {
+		return nil, err
+	}
+	return statements, nil
 }
 
 func (p *Parser) expressionStatement() (Stmt, error) {
