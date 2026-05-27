@@ -113,7 +113,7 @@ Notice how it's similar to unary. (unary is in fact right-associative.)
 Problem is its left-recursiveness. This will require a different technique to parse than what we are going to use for golox. therefore, we use the second expression rule.
 
 
-### Evolution after chapter 8 Statements and State
+## Evolution in chapter 8 Statements and State
 
 The middle of the grammar tree stays the same.
 
@@ -124,6 +124,8 @@ program     -> decleration* EOF ;
 declaration -> varDecl | statement ;
 varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
 statement   -> exprStmt | printStmt ;
+exprStmt    -> expression ";" ;
+printStmt   -> "print" expression ";" ;
 ```
 
 `declaration` for now only contains variable declarations or statements. Later, we'll add functions and classes.
@@ -150,4 +152,42 @@ assignment -> IDENTIFIER "=" assignment
               | equality
               ;
 
+```
+
+### 8.5.2 Blocks
+
+```
+statement    -> exprStmt
+              | printStmt
+              | block
+              ;
+
+block        -> "{" declaration* "}" ;
+```
+
+### New grammar:
+
+```
+program     -> decleration* EOF ;
+declaration -> varDecl | statement ;
+varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
+statement   -> exprStmt | printStmt ;
+exprStmt    -> expression ";" ;
+printStmt   -> "print" expression ";" ;
+
+expression  -> equality ;
+equality    -> comparison ( ( "!=" | "==" ) comparison )* ;
+comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term        -> factor ( ( "-" | "+" ) factor )* ;
+factor      -> unary ( ( "/" | "*" ) unary )* ;
+unary       -> ( "-" | "!" ) unary | primary ;
+
+primary     -> NUMBER
+            | STRING
+            | "true"
+            | "false"
+            | "nil"
+            | "(" expression ")
+            | IDENTIFIER
+            ;
 ```
