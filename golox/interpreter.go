@@ -69,8 +69,8 @@ func (i *Interpreter) visitBlockStatement(s Stmt) error {
 		return errors.New("not a blockStmt")
 	}
 
-	return i.executeBlock(block.statements, NewEnvironment(nil))
-
+	enclosing := i.environment
+	return i.executeBlock(block.statements, NewEnvironment(&enclosing))
 }
 
 func (i *Interpreter) executeBlock(statements []Stmt, env Environment) error {
