@@ -53,6 +53,9 @@ func (i *Interpreter) execute(statement Stmt) error {
 	case *exprStmt:
 		return i.visitExpressionStmt(statement)
 
+	case *ifStmt:
+		return i.visitIfStmt(statement)
+
 	case *printStmt:
 		return i.visitPrintStmt(statement)
 
@@ -105,6 +108,34 @@ func (i *Interpreter) visitExpressionStmt(s Stmt) error {
 	_, err := i.evaluate(stmt.Expression)
 	if err != nil {
 		return fmt.Errorf("can't evaluate stmt.Expression: %v", err)
+	}
+
+	return nil
+}
+
+func (i *Interpreter) visitIfStmt(s Stmt) error {
+	var err error
+
+	stmt, ok := s.(*ifStmt)
+	if !ok {
+		return errors.New("not an ifStmt")
+	}
+
+	condition, err := i.evaluate(stmt.condition)
+	if err != nil {
+		return fmt.Errorf("could not evaluate ifStmt.condition: %v", err)
+	}
+
+	if isTruthy(condition) {
+		err = i.execute(stmt.thenBranch)
+		if err != nil {
+			return fmt.Errorf("could not execute ifStmt.thenBranch: %v", err)
+		}
+	} else if stmt.elseBranch != nil {
+		err = i.execute(stmt.elseBranch)
+		if err != nil {
+			return fmt.Errorf("could not execute ifStmt.elseBranch: %v", err)
+		}
 	}
 
 	return nil

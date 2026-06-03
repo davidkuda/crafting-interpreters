@@ -171,7 +171,7 @@ block        -> "{" declaration* "}" ;
 program     -> decleration* EOF ;
 declaration -> varDecl | statement ;
 varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
-statement   -> exprStmt | printStmt ;
+statement   -> exprStmt | printStmt | block ;
 exprStmt    -> expression ";" ;
 printStmt   -> "print" expression ";" ;
 
@@ -191,3 +191,15 @@ primary     -> NUMBER
             | IDENTIFIER
             ;
 ```
+
+
+## Evolution in chapter 9 Control Flow
+
+9.2 Conditional Execution
+```
+statement   -> exprStmt | ifStmt | printStmt | block ;
+ifStmt      -> "if" "(" expression ")" statement
+               ( "else" statement )? ;
+```
+
+

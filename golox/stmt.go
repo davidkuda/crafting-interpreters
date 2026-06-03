@@ -16,6 +16,14 @@ type exprStmt struct {
 
 func (*exprStmt) stmt() {}
 
+type ifStmt struct {
+	condition  Expr
+	thenBranch Stmt
+	elseBranch Stmt
+}
+
+func (*ifStmt) stmt() {}
+
 type printStmt struct {
 	Expression Expr
 }
