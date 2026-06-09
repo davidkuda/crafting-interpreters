@@ -20,8 +20,12 @@ func TestCLI(t *testing.T) {
 			expected: "yes, true, indeed.",
 		},
 		{
-			file:     "./testscripts/blocks.lox",
+			file:     "./testscripts/8_blocks.lox",
 			expected: "inner a\nouter b\nglobal c\nouter a\nouter b\nglobal c\nglobal a\nglobal b\nglobal c",
+		},
+		{
+			file:     "./testscripts/9_controlflow_andor.lox",
+			expected: "first yes\nsecond yes\nthird yes",
 		},
 	}
 

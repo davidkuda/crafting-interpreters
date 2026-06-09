@@ -1,0 +1,22 @@
+var n = 42;
+var m = 111;
+
+if (n == 42 and m == 111) {
+    print "first yes"
+}
+
+if (n == 111 or m == 111) {
+    print "second yes"
+}
+
+if (n == 42 and m == 42) {
+    print "don't print me"
+}
+
+if (n == 42 or m == 42) {
+    print "third yes"
+}
+
+if (n == 108 and m == 42) {
+    print "don't print me"
+}

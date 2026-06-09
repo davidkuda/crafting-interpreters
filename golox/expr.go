@@ -61,6 +61,18 @@ func (l *literalExpr) String() string {
 	return literalToString(l.Value)
 }
 
+type logicalExpr struct {
+	left     Expr
+	operator Token
+	right    Expr
+}
+
+func (*logicalExpr) exprNode() {}
+
+func (l *logicalExpr) String() string {
+	return fmt.Sprintf("%q %s %q", l.left, &l.operator, l.right)
+}
+
 type unaryExpr struct {
 	Operator Token
 	Right    Expr

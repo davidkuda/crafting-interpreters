@@ -201,6 +201,9 @@ func (i *Interpreter) evaluate(expr Expr) (any, error) {
 	case *literalExpr:
 		return e.Value, nil
 
+	case *logicalExpr:
+		return i.visitLogical(expr)
+
 	case *variableExpr:
 		return i.visitVariable(expr)
 
@@ -209,6 +212,30 @@ func (i *Interpreter) evaluate(expr Expr) (any, error) {
 	}
 
 	return nil, errors.New("reached end of eval without evaluating anything")
+}
+
+func (i *Interpreter) visitLogical(expr Expr) (any, error) {
+	logical, ok := expr.(*logicalExpr)
+	if !ok {
+		return nil, errors.New("not a logical expression")
+	}
+
+	left, err := i.evaluate(logical.left)
+	if err != nil {
+		return nil, err
+	}
+
+	if logical.operator.Type == OR {
+		if isTruthy(left) {
+			return left, nil
+		}
+	} else {
+		if !isTruthy(left) {
+			return left, nil
+		}
+	}
+
+	return i.evaluate(logical.right)
 }
 
 func (i *Interpreter) visitBinary(expr Expr) (any, error) {

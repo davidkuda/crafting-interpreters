@@ -207,7 +207,7 @@ func (p *Parser) expression() (Expr, error) {
 func (p *Parser) assignment() (Expr, error) {
 	var err error
 
-	expr, err := p.equality()
+	expr, err := p.or()
 	if err != nil {
 		return nil, err
 	}
@@ -234,6 +234,43 @@ func (p *Parser) assignment() (Expr, error) {
 		// let's see how to deal with this once I see the problem
 		// during experimentation / testing.
 		return nil, NewParseError(equals, "invalid assignment target")
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) or() (Expr, error) {
+	var err error
+	expr, err := p.and()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.match(OR) {
+		operator := p.previous()
+		right, err := p.and()
+		if err != nil {
+			return nil, err
+		}
+		expr = &logicalExpr{expr, operator, right}
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) and() (Expr, error) {
+	expr, err := p.equality()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.match(AND) {
+		operator := p.previous()
+		right, err := p.equality()
+		if err != nil {
+			return nil, err
+		}
+		expr = &logicalExpr{expr, operator, right}
 	}
 
 	return expr, nil
