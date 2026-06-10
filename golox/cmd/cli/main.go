@@ -82,7 +82,6 @@ func (g *cli) run(code []byte) {
 		}
 		return
 	}
-	// fmt.Printf("tokens: %+v\n", tokens)
 
 	ast, err := golox.Parse(tokens)
 	if err != nil {

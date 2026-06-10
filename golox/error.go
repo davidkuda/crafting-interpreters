@@ -8,16 +8,16 @@ type GoloxError struct {
 	where   string
 }
 
-func NewError(line int, message string) *GoloxError {
+func NewError(line int, message string, where string) *GoloxError {
 	return &GoloxError{
 		line:    line,
 		message: message,
-		where:   "",
+		where:   where,
 	}
 }
 
 func (e *GoloxError) Error() string {
-	return fmt.Sprintf("[line %d] Error %s: %s\n", e.line, e.where, e.message)
+	return fmt.Sprintf("[line %d] Error %q: %s", e.line, e.where, e.message)
 }
 
 func ReportGoloxError(token Token, message string) {

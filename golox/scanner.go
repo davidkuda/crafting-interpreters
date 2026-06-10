@@ -31,6 +31,33 @@ func NewScanner(source []byte) Scanner {
 	}
 }
 
+type ScanError struct {
+	line      int
+	message   string
+	character byte
+	// where string
+	// How to use this to indicate the location?
+	// maybe "column" as integer, or the whole line with squirly lines under it
+}
+
+func NewScanError(line int, message string, character byte) *ScanError {
+	return &ScanError{
+		line:      line,
+		message:   message,
+		character: character,
+	}
+}
+
+func (e *ScanError) Error() string {
+	if e.character > 0 {
+		return fmt.Sprintf(
+			"[line %d] error: %s: %q",
+			e.line, e.message, e.character)
+	} else {
+		return fmt.Sprintf("[line %d] error: %s", e.line, e.message)
+	}
+}
+
 func (s *Scanner) ScanTokens() {
 	for !s.isAtEnd() {
 		s.start = s.current
@@ -131,7 +158,8 @@ func (s *Scanner) scanToken() {
 		} else if s.isAlpha(c) {
 			s.identifier()
 		} else {
-			s.Errors = append(s.Errors, NewError(s.line, "unexpected character"))
+			err := NewScanError(s.line, "unexpected character", c)
+			s.Errors = append(s.Errors, err)
 		}
 	}
 }
@@ -207,7 +235,7 @@ func (s *Scanner) string() {
 	}
 
 	if s.isAtEnd() {
-		err := NewError(s.line, "unterminated string")
+		err := NewScanError(s.line, "unterminated string", 0)
 		s.Errors = append(s.Errors, err)
 		return
 	}
@@ -241,7 +269,8 @@ func (s *Scanner) number() {
 	str := string(s.Source[s.start:s.current])
 	v, err := strconv.ParseFloat(str, 64)
 	if err != nil {
-		s.Errors = append(s.Errors, NewError(s.line, fmt.Sprintf("could not parse %s as float", str)))
+		loxErr := NewScanError(s.line, fmt.Sprintf("could not parse %s as float", str), 0)
+		s.Errors = append(s.Errors, loxErr)
 	}
 	s.addTokenWithLiteral(NUMBER, v)
 }

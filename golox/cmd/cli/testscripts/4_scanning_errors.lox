@@ -1,0 +1,11 @@
+var a = "hello world";
+
+if a && "ampersand" == "ampersand" {
+		print "the ampersand should trigger a parse error"
+}
+
+if a || "pipe" != "valid" {
+		print "the pipe should trigger a parse error"
+}
+
+print "unterminated string
