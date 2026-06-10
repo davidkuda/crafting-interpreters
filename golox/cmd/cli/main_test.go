@@ -2,9 +2,50 @@ package main_test
 
 import (
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func TestScanningErrorsBuild(t *testing.T) {
+	bin := filepath.Join(t.TempDir(), "golox")
+
+	build := exec.Command("go", "build", "-o", bin, ".")
+	buildOutput, err := build.CombinedOutput()
+	if err != nil {
+		t.Fatalf("build failed: %v\n%s", err, buildOutput)
+	}
+
+	cmd := exec.Command(bin, "./testscripts/4_scanning_errors.lox")
+	output, err := cmd.CombinedOutput()
+
+	if err == nil {
+		t.Fatal("expected command to fail")
+	}
+
+	exitErr, ok := err.(*exec.ExitError)
+	if !ok {
+		t.Fatalf("expected ExitError, got %T", err)
+	}
+
+	if exitErr.ExitCode() != 65 {
+		t.Fatalf("expected exit code 65, got %d\noutput:\n%s", exitErr.ExitCode(), output)
+	}
+
+	got := string(output)
+
+	if !strings.Contains(got, "unexpected character: '&'") {
+		t.Errorf("missing expected error message")
+	}
+
+	if !strings.Contains(got, "unexpected character: '|'") {
+		t.Errorf("missing expected error message")
+	}
+
+	if !strings.Contains(got, "unterminated string") {
+		t.Errorf("missing expected error message")
+	}
+}
 
 func TestCLI(t *testing.T) {
 	var tests = []struct {
