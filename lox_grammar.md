@@ -202,3 +202,18 @@ statement -> exprStmt | ifStmt | printStmt | whileStmt | block ;
 whileStmt -> "while" "(" expression ")" statement ;
 ```
 
+9.5 for loops
+
+C-style for loops with:
+1. initializer
+2. condition
+3. increment
+
+```
+statement -> exprStmt | forStmt | ifStmt | printStmt | whileStmt | block ;
+forStmt   -> "for" "("
+                  (varDecl | exprStmt | ";")
+                  expression? ";"
+                  expression? ")"
+             ")" statement ;
+```

@@ -72,6 +72,10 @@ func TestCLI(t *testing.T) {
 			file:     "./testscripts/9_controlflow_while.lox",
 			expected: "let's go!\n0\n1\n2\n3\n4\ndone!",
 		},
+		{
+			file:     "./testscripts/9_controlflow_for.lox",
+			expected: "0\n1\n1\n2\n3\n5\n8\n13\n21\n34\n55\n89\n144\n233\n377\n610\n987\n1597\n2584\n4181\n6765",
+		},
 	}
 
 	var failed bool
@@ -83,7 +87,6 @@ func TestCLI(t *testing.T) {
 	if err != nil {
 		t.Fatalf("build failed: %v\n%s", err, buildOutput)
 	}
-
 
 	for _, test := range tests {
 

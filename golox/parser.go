@@ -97,6 +97,10 @@ func (p *Parser) varDeclaration() (Stmt, error) {
 }
 
 func (p *Parser) statement() (Stmt, error) {
+	if p.match(FOR) {
+		return p.forStatement()
+	}
+
 	if p.match(IF) {
 		return p.ifStatement()
 	}
@@ -118,6 +122,76 @@ func (p *Parser) statement() (Stmt, error) {
 	}
 
 	return p.expressionStatement()
+}
+
+func (p *Parser) forStatement() (Stmt, error) {
+	// here, "desugaring" (page 145-146) happens.
+
+	var err error
+
+	p.consume(LEFT_PAREN, "Expect '(' after 'for'.")
+
+	var initializer Stmt
+
+	if p.match(SEMICOLON) {
+		initializer = nil
+	} else if p.match(VAR) {
+		initializer, err = p.varDeclaration()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		initializer, err = p.expressionStatement()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var condition Expr
+
+	if !p.check(SEMICOLON) {
+		condition, err = p.expression()
+		if err != nil {
+			return nil, err
+		}
+	}
+	p.consume(SEMICOLON, "Expect ';' after loop condition.")
+
+	var increment Expr
+	if !p.check(RIGHT_PAREN) {
+		increment, err = p.expression()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	p.consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+
+	body, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+
+	if increment != nil {
+		body = &blockStmt{
+			statements: []Stmt{
+				body,
+				&exprStmt{increment},
+			},
+		}
+	}
+
+	if condition == nil {
+		condition = &literalExpr{true}
+	}
+
+	body = &whileStmt{condition, body}
+
+	if initializer != nil {
+		body = &blockStmt{statements: []Stmt{initializer, body}}
+	}
+
+	return body, nil
 }
 
 func (p *Parser) ifStatement() (Stmt, error) {
