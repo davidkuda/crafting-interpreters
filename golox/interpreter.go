@@ -59,6 +59,9 @@ func (i *Interpreter) execute(statement Stmt) error {
 	case *printStmt:
 		return i.visitPrintStmt(statement)
 
+	case *whileStmt:
+		return i.visitWhileStmt(statement)
+
 	case *varStmt:
 		return i.visitVarStmt(statement)
 	}
@@ -158,6 +161,28 @@ func (i *Interpreter) visitPrintStmt(s Stmt) error {
 	}
 
 	fmt.Println(val)
+
+	return nil
+}
+
+func (i *Interpreter) visitWhileStmt(s Stmt) error {
+	stmt, ok := s.(*whileStmt)
+	if !ok {
+		return errors.New("not a whileStmt")
+	}
+
+	for {
+		condition, err := i.evaluate(stmt.condition)
+		if err != nil {
+			return err
+		}
+
+		if !isTruthy(condition) {
+			break
+		}
+
+		i.execute(stmt.body)
+	}
 
 	return nil
 }

@@ -105,6 +105,10 @@ func (p *Parser) statement() (Stmt, error) {
 		return p.printStatement()
 	}
 
+	if p.match(WHILE) {
+		return p.whileStatement()
+	}
+
 	if p.match(LEFT_BRACE) {
 		statements, err := p.block()
 		if err != nil {
@@ -163,6 +167,21 @@ func (p *Parser) printStatement() (Stmt, error) {
 	p.consume(SEMICOLON, "Expect ';' after value.")
 
 	return &printStmt{Expression: val}, nil
+}
+
+func (p *Parser) whileStatement() (Stmt, error) {
+	p.consume(LEFT_PAREN, "Expect '(' after 'while'.")
+	condition, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+	p.consume(RIGHT_PAREN, "Expect ')' after condition.")
+	body, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+
+	return &whileStmt{condition, body}, nil
 }
 
 func (p *Parser) block() ([]Stmt, error) {

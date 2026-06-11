@@ -30,6 +30,13 @@ type printStmt struct {
 
 func (*printStmt) stmt() {}
 
+type whileStmt struct {
+	condition Expr
+	body      Stmt
+}
+
+func (*whileStmt) stmt() {}
+
 type varStmt struct {
 	name        Token
 	initializer Expr

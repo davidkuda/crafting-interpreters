@@ -68,19 +68,26 @@ func TestCLI(t *testing.T) {
 			file:     "./testscripts/9_controlflow_andor.lox",
 			expected: "first yes\nsecond yes\nthird yes",
 		},
+		{
+			file:     "./testscripts/9_controlflow_while.lox",
+			expected: "let's go!\n0\n1\n2\n3\n4\ndone!",
+		},
 	}
 
 	var failed bool
 
+	bin := filepath.Join(t.TempDir(), "golox")
+
+	build := exec.Command("go", "build", "-o", bin, ".")
+	buildOutput, err := build.CombinedOutput()
+	if err != nil {
+		t.Fatalf("build failed: %v\n%s", err, buildOutput)
+	}
+
+
 	for _, test := range tests {
 
-		cmd := exec.Command(
-			"go",
-			"run",
-			".",
-			test.file,
-		)
-
+		cmd := exec.Command(bin, test.file)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("executing script %q failed: %v", test.file, err)
