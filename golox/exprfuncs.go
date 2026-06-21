@@ -5,25 +5,6 @@ import (
 	"strconv"
 )
 
-func FormatExprStringer(expr Expr) string {
-	switch e := expr.(type) {
-	case *binaryExpr:
-		return e.String()
-
-	case *groupingExpr:
-		return e.String()
-
-	case *literalExpr:
-		return e.String()
-
-	case *unaryExpr:
-		return e.String()
-
-	default:
-		panic(fmt.Sprintf("unknown Expr type %T", expr))
-	}
-}
-
 func FormatExpr(expr Expr) string {
 	switch e := expr.(type) {
 	case *binaryExpr:
