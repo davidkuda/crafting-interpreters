@@ -456,12 +456,57 @@ func (p *Parser) unary() (Expr, error) {
 		return &unaryExpr{operator, right}, nil
 	}
 
-	expr, err := p.primary()
+	expr, err := p.call()
 	if err != nil {
 		return nil, err
 	}
 
 	return expr, nil
+}
+
+func (p *Parser) call() (Expr, error) {
+	expr, err := p.primary()
+	if err != nil {
+		return nil, err
+	}
+
+	for {
+		if p.match(LEFT_PAREN) {
+			expr, err = p.finishCall(expr)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			break
+		}
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) finishCall(callee Expr) (Expr, error) {
+	arguments := make([]Expr, 0)
+
+	for p.match(COMMA) {
+		expr, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+		arguments = append(arguments, expr)
+	}
+
+	paren, err := p.consume(RIGHT_PAREN, "Expect ')' after arguments.")
+	if err != nil {
+		return nil, err
+	}
+
+	call := callExpr{
+		callee:    callee,
+		paren:     paren,
+		arguments: arguments,
+	}
+
+	return &call, nil
 }
 
 // primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;

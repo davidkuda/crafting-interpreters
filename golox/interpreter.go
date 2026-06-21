@@ -236,6 +236,7 @@ func (i *Interpreter) evaluate(expr Expr) (any, error) {
 		return i.visitAssignExpr(expr)
 	}
 
+
 	return nil, errors.New("reached end of eval without evaluating anything")
 }
 

@@ -20,6 +20,14 @@ type binaryExpr struct {
 
 func (*binaryExpr) exprNode() {}
 
+type callExpr struct {
+	callee    Expr
+	paren     Token
+	arguments []Expr
+}
+
+func (*callExpr) exprNode() {}
+
 type groupingExpr struct {
 	Expression Expr
 }
