@@ -234,8 +234,10 @@ func (i *Interpreter) evaluate(expr Expr) (any, error) {
 
 	case *assignExpr:
 		return i.visitAssignExpr(expr)
-	}
 
+	case *callExpr:
+		return i.visitCallExpr(expr)
+	}
 
 	return nil, errors.New("reached end of eval without evaluating anything")
 }
@@ -428,6 +430,35 @@ func (i *Interpreter) visitAssignExpr(expr Expr) (any, error) {
 	i.environment.Assign(a.name, value)
 
 	return value, nil
+}
+
+func (i *Interpreter) visitCallExpr(expr Expr) (any, error) {
+	//
+	call, ok := expr.(*callExpr)
+	if !ok {
+		return nil, errors.New("not a call expression")
+	}
+
+	arguments := make([]any, 0)
+	for _, argument := range call.arguments {
+		arg, err := i.evaluate(argument)
+		if err != nil {
+			return nil, err
+		}
+		arguments = append(arguments, arg)
+	}
+
+	function, ok := call.callee.(LoxCallable)
+	if !ok {
+		return nil, NewRuntimeError(call.paren, "can only call functions and classes.")
+	}
+
+	if len(arguments) != function.Arity() {
+		msg := fmt.Sprintf("expected %d arguments but got %d", function.Arity(), len(arguments))
+		return nil, NewRuntimeError(call.paren, msg)
+	}
+
+	return function.Call(i, arguments)
 }
 
 // from page 101:
