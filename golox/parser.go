@@ -487,15 +487,19 @@ func (p *Parser) call() (Expr, error) {
 func (p *Parser) finishCall(callee Expr) (Expr, error) {
 	arguments := make([]Expr, 0)
 
-	for p.match(COMMA) {
+	for {
+		if len(arguments) > 255 {
+			return nil, NewParseError(p.peek(), "Can't have more than 255 arguments.")
+		}
+
 		expr, err := p.expression()
 		if err != nil {
 			return nil, err
 		}
 		arguments = append(arguments, expr)
 
-		if len(arguments) > 255 {
-			return nil, NewParseError(p.peek(), "Can't have more than 255 arguments.")
+		if !p.match(COMMA) {
+			break
 		}
 	}
 
