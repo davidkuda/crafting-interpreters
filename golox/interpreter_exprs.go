@@ -8,11 +8,14 @@ import (
 func (i *Interpreter) evaluate(expr Expr) (any, error) {
 	switch e := expr.(type) {
 
+	case *assignExpr:
+		return i.visitAssignExpr(expr)
+
 	case *binaryExpr:
 		return i.visitBinary(expr)
 
-	case *unaryExpr:
-		return i.visitUnary(expr)
+	case *callExpr:
+		return i.visitCallExpr(expr)
 
 	case *groupingExpr:
 		return i.evaluate(e.Expression)
@@ -23,41 +26,29 @@ func (i *Interpreter) evaluate(expr Expr) (any, error) {
 	case *logicalExpr:
 		return i.visitLogical(expr)
 
+	case *unaryExpr:
+		return i.visitUnary(expr)
+
 	case *variableExpr:
 		return i.visitVariable(expr)
-
-	case *assignExpr:
-		return i.visitAssignExpr(expr)
-
-	case *callExpr:
-		return i.visitCallExpr(expr)
 	}
 
 	return nil, errors.New("reached end of eval without evaluating anything")
 }
 
-func (i *Interpreter) visitLogical(expr Expr) (any, error) {
-	logical, ok := expr.(*logicalExpr)
+func (i *Interpreter) visitAssignExpr(expr Expr) (any, error) {
+	a, ok := expr.(*assignExpr)
 	if !ok {
-		return nil, errors.New("not a logical expression")
+		return nil, errors.New("not a variable expression")
 	}
-
-	left, err := i.evaluate(logical.left)
+	value, err := i.evaluate(a.value)
 	if err != nil {
 		return nil, err
 	}
 
-	if logical.operator.Type == OR {
-		if isTruthy(left) {
-			return left, nil
-		}
-	} else {
-		if !isTruthy(left) {
-			return left, nil
-		}
-	}
+	i.environment.Assign(a.name, value)
 
-	return i.evaluate(logical.right)
+	return value, nil
 }
 
 func (i *Interpreter) visitBinary(expr Expr) (any, error) {
@@ -176,6 +167,60 @@ func (i *Interpreter) visitBinary(expr Expr) (any, error) {
 	}
 }
 
+func (i *Interpreter) visitCallExpr(expr Expr) (any, error) {
+	//
+	call, ok := expr.(*callExpr)
+	if !ok {
+		return nil, errors.New("not a call expression")
+	}
+
+	arguments := make([]any, 0)
+	for _, argument := range call.arguments {
+		arg, err := i.evaluate(argument)
+		if err != nil {
+			return nil, err
+		}
+		arguments = append(arguments, arg)
+	}
+
+	function, ok := call.callee.(LoxCallable)
+	if !ok {
+		return nil, NewRuntimeError(call.paren, "can only call functions and classes.")
+	}
+
+	if len(arguments) != function.Arity() {
+		msg := fmt.Sprintf("expected %d arguments but got %d", function.Arity(), len(arguments))
+		return nil, NewRuntimeError(call.paren, msg)
+	}
+
+	return function.Call(i, arguments)
+}
+
+
+func (i *Interpreter) visitLogical(expr Expr) (any, error) {
+	logical, ok := expr.(*logicalExpr)
+	if !ok {
+		return nil, errors.New("not a logical expression")
+	}
+
+	left, err := i.evaluate(logical.left)
+	if err != nil {
+		return nil, err
+	}
+
+	if logical.operator.Type == OR {
+		if isTruthy(left) {
+			return left, nil
+		}
+	} else {
+		if !isTruthy(left) {
+			return left, nil
+		}
+	}
+
+	return i.evaluate(logical.right)
+}
+
 func (i *Interpreter) visitUnary(expr Expr) (any, error) {
 	unary, ok := expr.(*unaryExpr)
 	if !ok {
@@ -209,48 +254,4 @@ func (i *Interpreter) visitVariable(expr Expr) (any, error) {
 		return nil, errors.New("not a variable expression")
 	}
 	return i.environment.Get(variableExpr.Name)
-}
-
-func (i *Interpreter) visitAssignExpr(expr Expr) (any, error) {
-	a, ok := expr.(*assignExpr)
-	if !ok {
-		return nil, errors.New("not a variable expression")
-	}
-	value, err := i.evaluate(a.value)
-	if err != nil {
-		return nil, err
-	}
-
-	i.environment.Assign(a.name, value)
-
-	return value, nil
-}
-
-func (i *Interpreter) visitCallExpr(expr Expr) (any, error) {
-	//
-	call, ok := expr.(*callExpr)
-	if !ok {
-		return nil, errors.New("not a call expression")
-	}
-
-	arguments := make([]any, 0)
-	for _, argument := range call.arguments {
-		arg, err := i.evaluate(argument)
-		if err != nil {
-			return nil, err
-		}
-		arguments = append(arguments, arg)
-	}
-
-	function, ok := call.callee.(LoxCallable)
-	if !ok {
-		return nil, NewRuntimeError(call.paren, "can only call functions and classes.")
-	}
-
-	if len(arguments) != function.Arity() {
-		msg := fmt.Sprintf("expected %d arguments but got %d", function.Arity(), len(arguments))
-		return nil, NewRuntimeError(call.paren, msg)
-	}
-
-	return function.Call(i, arguments)
 }
