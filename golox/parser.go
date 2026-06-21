@@ -470,7 +470,6 @@ func (p *Parser) call() (Expr, error) {
 		return nil, err
 	}
 
-	fmt.Println("inside call")
 	for {
 		if p.match(LEFT_PAREN) {
 			expr, err = p.finishCall(expr)
