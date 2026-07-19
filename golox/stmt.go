@@ -16,6 +16,14 @@ type exprStmt struct {
 
 func (*exprStmt) stmt() {}
 
+type functionStmt struct {
+	name   Token
+	params []Token
+	body   []Stmt
+}
+
+func (*functionStmt) stmt() {}
+
 type ifStmt struct {
 	condition  Expr
 	thenBranch Stmt

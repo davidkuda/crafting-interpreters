@@ -57,6 +57,14 @@ func (e *ParseError) Error() string {
 // rules as functions:
 
 func (p *Parser) declaration() (Stmt, error) {
+	if p.match(FUN) {
+		fn, err := p.functionDeclaration("function")
+		if err != nil {
+			return nil, err
+		}
+		return fn, nil
+	}
+
 	if p.match(VAR) {
 		vd, err := p.varDeclaration()
 		if err != nil {
@@ -75,6 +83,63 @@ func (p *Parser) declaration() (Stmt, error) {
 	}
 
 	return stmt, nil
+}
+
+// can be used for functions (kind="function") or methods (kind="method").
+// kind is only relevant for the error message.
+func (p *Parser) functionDeclaration(kind string) (Stmt, error) {
+	var err error
+
+	name, err := p.consume(IDENTIFIER, "expect "+kind+" name")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(LEFT_PAREN, "expect '(' after "+kind+" name")
+	if err != nil {
+		return nil, err
+	}
+
+	parameters := make([]Token, 0)
+
+	// we are just after the opening LEFT_PAREN. If not closing RIGHT_PAREN, we have args.
+	for {
+		if len(parameters) > 255 {
+			return nil, NewParseError(p.peek(), "can't have more than 255 parameters")
+		}
+
+		param, err := p.consume(IDENTIFIER, "expect parameter name")
+		if err != nil {
+			return nil, err
+		}
+		parameters = append(parameters, param)
+
+		if p.check(COMMA) {
+			p.advance()
+			continue
+		} else if p.check(RIGHT_PAREN) {
+			p.advance()
+			break
+		} else {
+			return nil, NewParseError(p.peek(), "expect COMMA or RIGHT_PAREN after parameter")
+		}
+	}
+
+	_, err = p.consume(LEFT_BRACE, "expect '{' before "+kind+" body")
+	if err != nil {
+		return nil, err
+	}
+	body, err := p.block()
+	if err != nil {
+		return nil, err
+	}
+
+	fn := functionStmt{
+		name: name,
+		params: parameters,
+		body: body,
+	}
+	return &fn, nil
 }
 
 func (p *Parser) varDeclaration() (Stmt, error) {

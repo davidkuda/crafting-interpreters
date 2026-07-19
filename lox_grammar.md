@@ -263,6 +263,8 @@ primary     -> NUMBER
 
 ## 10: Functions
 
+**Calls:**
+
 Callee -> the thing being called -> can be any expression that evaluates to a function.
 
 unary receives call:
@@ -281,14 +283,35 @@ primary     -> NUMBER
                ;
 ```
 
+**Function Declarations:**
+
+```
+declaration    → funDecl
+               | varDecl
+               | statement ;
+funDecl        → "fun" function ;
+function       → IDENTIFIER "(" parameters? ")" block ;
+parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
+```
+
 ### New grammar:
 
 ```
 program     -> decleration* EOF ;
 declaration -> varDecl | statement ;
+declaration -> funDecl
+               | varDecl
+               | statement ;
 varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
-
-statement   -> exprStmt | forStmt | ifStmt | printStmt | whileStmt | block ;
+funDecl     -> "fun" function ;
+function    -> IDENTIFIER "(" parameters? ")" block ;
+parameters  -> IDENTIFIER ( "," IDENTIFIER )* ;
+statement   -> exprStmt
+               | forStmt
+               | ifStmt
+               | printStmt
+               | whileStmt
+               | block ;
 exprStmt    -> expression ";" ;
 forStmt     -> "for" "("
                   (varDecl | exprStmt | ";")
