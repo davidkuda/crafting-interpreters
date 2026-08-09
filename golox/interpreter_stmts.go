@@ -36,10 +36,10 @@ func (i *Interpreter) visitBlockStatement(s Stmt) error {
 	}
 
 	enclosing := i.environment
-	return i.executeBlock(block.statements, NewEnvironment(&enclosing))
+	return i.executeBlock(block.statements, NewEnvironment(enclosing))
 }
 
-func (i *Interpreter) executeBlock(statements []Stmt, env Environment) error {
+func (i *Interpreter) executeBlock(statements []Stmt, env *Environment) error {
 	var err error
 
 	previous := i.environment
