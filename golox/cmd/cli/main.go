@@ -10,14 +10,14 @@ import (
 	"github.com/davidkuda/golox"
 )
 
-type cli struct {
+type program struct {
 	interpreter     golox.Interpreter
 	hadError        bool
 	hadRuntimeError bool
 }
 
 func main() {
-	program := cli{}
+	program := program{}
 	program.interpreter = golox.NewInterpreter()
 
 	if len(os.Args) > 2 {
@@ -33,25 +33,25 @@ func main() {
 	}
 }
 
-func (g *cli) runFile(path string) {
+func (p *program) runFile(path string) {
 	b, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Println("could not read file.")
 		os.Exit(1)
 	}
-	g.run(b)
-	if g.hadError {
+	p.run(b)
+	if p.hadError {
 		os.Exit(65)
 	}
 
-	if g.hadRuntimeError {
+	if p.hadRuntimeError {
 		os.Exit(70)
 	}
 
 	os.Exit(0)
 }
 
-func (g *cli) runPrompt() {
+func (p *program) runPrompt() {
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("> ")
@@ -66,17 +66,17 @@ func (g *cli) runPrompt() {
 			fmt.Println("bad input:", err)
 			os.Exit(1)
 		}
-		g.run(line)
+		p.run(line)
 		fmt.Println()
-		g.hadError = false
-		g.hadRuntimeError = false
+		p.hadError = false
+		p.hadRuntimeError = false
 	}
 }
 
-func (g *cli) run(code []byte) {
+func (p *program) run(code []byte) {
 	tokens, errs := golox.Scan(code)
 	if len(errs) > 0 {
-		g.hadError = true
+		p.hadError = true
 		for _, err := range errs {
 			fmt.Println(err)
 		}
@@ -85,7 +85,7 @@ func (g *cli) run(code []byte) {
 
 	ast, err := golox.Parse(tokens)
 	if err != nil {
-		g.hadError = true
+		p.hadError = true
 		fmt.Printf("failed parsing tokens: %v\n", err)
 		fmt.Println()
 		return
@@ -94,9 +94,9 @@ func (g *cli) run(code []byte) {
 	// 	fmt.Printf("ast:    %+v\n", declaration)
 	// }
 
-	err = g.interpreter.Interpret(ast)
+	err = p.interpreter.Interpret(ast)
 	if err != nil {
-		g.hadRuntimeError = true
+		p.hadRuntimeError = true
 		fmt.Printf("failed interpretation: %v\n", err)
 		fmt.Println()
 		return
