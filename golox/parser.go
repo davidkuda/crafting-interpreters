@@ -26,7 +26,7 @@ func Parse(tokens []Token) ([]Stmt, error) {
 	if p.hadError {
 		fmt.Println("Parser Errors:")
 		for _, err := range p.errors {
-			fmt.Println("  - ", err)
+			fmt.Println("  -", err)
 		}
 		return statements, fmt.Errorf("had %d parser errors", len(p.errors))
 	} else {

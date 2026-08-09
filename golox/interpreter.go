@@ -9,9 +9,13 @@ type Interpreter struct {
 	environment *Environment
 }
 
-func NewInterpreter() Interpreter {
-	return Interpreter{
-		environment: NewEnvironment(nil),
+func NewInterpreter() *Interpreter {
+	globals := NewEnvironment(nil)
+	globals.Define("clock", Clock{})
+
+	return &Interpreter{
+		globals:     globals,
+		environment: globals,
 	}
 }
 
