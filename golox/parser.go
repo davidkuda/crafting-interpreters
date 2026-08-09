@@ -109,7 +109,7 @@ func (p *Parser) functionDeclaration(kind string) (Stmt, error) {
 	parameters := make([]Token, 0)
 
 	// we are just after the opening LEFT_PAREN. If not closing RIGHT_PAREN, we have args.
-	if !p.check(IDENTIFIER) || !p.check(RIGHT_PAREN) {
+	if !p.check(IDENTIFIER) && !p.check(RIGHT_PAREN) {
 		return nil, NewParseError(p.peek(), "expect closing paren or identifier after opening paren")
 	}
 	for !p.match(RIGHT_PAREN) {
