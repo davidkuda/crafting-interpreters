@@ -16,22 +16,35 @@ func Parse(tokens []Token) ([]Stmt, error) {
 	for !p.isAtEnd() {
 		statement, err := p.declaration()
 		if err != nil {
-			return nil, fmt.Errorf("could not parse: %v", err)
+			p.hadError = true
+			p.errors = append(p.errors, fmt.Errorf("could not parse: %v", err))
+			continue
 		}
 		statements = append(statements, statement)
 	}
 
-	return statements, nil
+	if p.hadError {
+		fmt.Println("Parser Errors:")
+		for _, err := range p.errors {
+			fmt.Println("  - ", err)
+		}
+		return statements, fmt.Errorf("had %d parser errors", len(p.errors))
+	} else {
+		return statements, nil
+	}
 }
 
 type Parser struct {
-	Tokens  []Token
-	current int // used as a pointer to know to parse the next Token
+	Tokens   []Token
+	current  int // used as a pointer to know to parse the next Token
+	hadError bool
+	errors   []error
 }
 
 func NewParser(t []Token) *Parser {
 	return &Parser{
 		Tokens: t,
+		errors: make([]error, 0),
 	}
 }
 
@@ -54,26 +67,19 @@ func (e *ParseError) Error() string {
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// rules as functions:
 
 func (p *Parser) declaration() (Stmt, error) {
+	var stmt Stmt
+	var err error
+
 	if p.match(FUN) {
-		fn, err := p.functionDeclaration("function")
-		if err != nil {
-			return nil, err
-		}
-		return fn, nil
+		stmt, err = p.functionDeclaration("function")
+	} else if p.match(VAR) {
+		stmt, err = p.varDeclaration()
+	} else {
+		stmt, err = p.statement()
 	}
 
-	if p.match(VAR) {
-		vd, err := p.varDeclaration()
-		if err != nil {
-			return nil, err
-		}
-		return vd, nil
-	}
-
-	stmt, err := p.statement()
 	if err != nil {
 		// p.decleration gets called repeatedly in Parse.
 		// when entering panic mode, go to the beginning
@@ -82,7 +88,7 @@ func (p *Parser) declaration() (Stmt, error) {
 		p.synchronize()
 	}
 
-	return stmt, nil
+	return stmt, err
 }
 
 // can be used for functions (kind="function") or methods (kind="method").
@@ -103,7 +109,10 @@ func (p *Parser) functionDeclaration(kind string) (Stmt, error) {
 	parameters := make([]Token, 0)
 
 	// we are just after the opening LEFT_PAREN. If not closing RIGHT_PAREN, we have args.
-	for {
+	if !p.check(IDENTIFIER) || !p.check(RIGHT_PAREN) {
+		return nil, NewParseError(p.peek(), "expect closing paren or identifier after opening paren")
+	}
+	for !p.match(RIGHT_PAREN) {
 		if len(parameters) > 255 {
 			return nil, NewParseError(p.peek(), "can't have more than 255 parameters")
 		}
