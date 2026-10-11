@@ -34,18 +34,21 @@ func TestParser(t *testing.T) {
 		},
 	}
 
+	g := New()
+
 	for _, test := range tests {
 
-		tokens, errs := Scan([]byte(test.input))
-		if errs != nil {
+		err = g.ScanSourceCode([]byte(test.input))
+		if err != nil {
 			t.Fatalf("could not scan input: %s: %v", test.input, err)
 		}
 
-		stmts, err := Parse(tokens)
+		err = g.ParseTokens()
 		if err != nil {
 			t.Fatalf("could not parse input: %s: %v", test.input, err)
 		}
 
+		stmts := g.parser.Statements
 		if len(stmts) != 1 {
 			t.Fatalf("expected 1 statement, got %d statement", len(stmts))
 		}

@@ -5,8 +5,10 @@ import (
 )
 
 func TestInterpretLiteral(t *testing.T) {
+	ip := NewInterpreter()
+
 	expr := literalExpr{42}
-	val, err := evaluate(&expr)
+	val, err := ip.evaluate(&expr)
 	if err != nil {
 		t.Fatalf("could not evaluate expr=%s: %v", expr, err)
 	}
@@ -37,13 +39,14 @@ func TestInterpretUnary(t *testing.T) {
 		},
 	}
 
+	ip := NewInterpreter()
 	for _, test := range tests {
 
 		expr := test.input
 
-		val, err := evaluate(&expr)
+		val, err := ip.evaluate(&expr)
 		if err != nil {
-			t.Fatalf("could not evaluate expr=%s: %v", expr.String(), err)
+			t.Fatalf("could not evaluate expr=%v: %v", expr, err)
 		}
 
 		if val != test.expected {
@@ -62,7 +65,8 @@ func TestInterpretBinary(t *testing.T) {
 
 	binary := binaryExpr{&left, tkn, &right}
 
-	val, err := evaluate(&binary)
+	ip := NewInterpreter()
+	val, err := ip.evaluate(&binary)
 	if err != nil {
 		t.Fatalf("could not evaluate binary: %v (expected=42 got=%v)", err, val)
 	}
