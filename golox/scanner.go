@@ -5,12 +5,6 @@ import (
 	"strconv"
 )
 
-func Scan(b []byte) ([]Token, []error) {
-	s := NewScanner(b)
-	s.ScanTokens()
-	return s.Tokens, s.Errors
-}
-
 // Walks through source code and generates tokens from it.
 type Scanner struct {
 	// source represents the source code, e.g. `var lang = "golox";`

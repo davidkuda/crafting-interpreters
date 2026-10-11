@@ -8,10 +8,8 @@ import (
 // top-down parser: start at the top grammar rule (see README)
 // and work your way down to the tree leaves.
 // Each expression grammar rule becomes a function.
-
-func Parse(tokens []Token) ([]Stmt, error) {
+func (p *Parser) Parse() error {
 	statements := make([]Stmt, 0)
-	p := NewParser(tokens)
 
 	for !p.isAtEnd() {
 		statement, err := p.declaration()
@@ -23,22 +21,22 @@ func Parse(tokens []Token) ([]Stmt, error) {
 		statements = append(statements, statement)
 	}
 
+	p.Statements = statements
+
 	if p.hadError {
-		fmt.Println("Parser Errors:")
-		for _, err := range p.errors {
-			fmt.Println("  -", err)
-		}
-		return statements, fmt.Errorf("had %d parser errors", len(p.errors))
-	} else {
-		return statements, nil
+		return fmt.Errorf("had %d parser errors", len(p.errors))
 	}
+
+	return nil
 }
 
 type Parser struct {
-	Tokens   []Token
-	current  int // used as a pointer to know to parse the next Token
-	hadError bool
-	errors   []error
+	Statements []Stmt
+	Tokens     []Token
+	current    int // used as a pointer to know to parse the next Token
+	hadError   bool
+	errors     []error
+	logger     slog.Logger
 }
 
 func NewParser(t []Token) *Parser {

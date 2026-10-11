@@ -11,14 +11,14 @@ import (
 )
 
 type program struct {
-	interpreter     golox.Interpreter
+	interpreter     *golox.Golox
 	hadError        bool
 	hadRuntimeError bool
 }
 
 func main() {
 	program := program{}
-	program.interpreter = golox.NewInterpreter()
+	program.interpreter = golox.New()
 
 	if len(os.Args) > 2 {
 		fmt.Println("usage: golox [script]")
@@ -74,27 +74,25 @@ func (p *program) runPrompt() {
 }
 
 func (p *program) run(code []byte) {
-	tokens, errs := golox.Scan(code)
-	if len(errs) > 0 {
-		p.hadError = true
-		for _, err := range errs {
-			fmt.Println(err)
-		}
-		return
-	}
+	var err error
 
-	ast, err := golox.Parse(tokens)
+	err = p.interpreter.ScanSourceCode(code)
 	if err != nil {
 		p.hadError = true
-		fmt.Printf("failed parsing tokens: %v\n", err)
-		fmt.Println()
+		fmt.Println(err)
+		p.interpreter.ReportScanErrors()
 		return
 	}
-	// for _, declaration := range ast {
-	// 	fmt.Printf("ast:    %+v\n", declaration)
-	// }
 
-	err = p.interpreter.Interpret(ast)
+	err = p.interpreter.ParseTokens()
+	if err != nil {
+		p.hadError = true
+		fmt.Println(err)
+		p.interpreter.ReportParseErrors()
+		return
+	}
+
+	err = p.interpreter.InterpretAST()
 	if err != nil {
 		p.hadRuntimeError = true
 		fmt.Printf("failed interpretation: %v\n", err)
