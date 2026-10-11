@@ -2,6 +2,9 @@ package golox
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
+	"strings"
 )
 
 // Recursive Descent Parsing:
@@ -12,6 +15,10 @@ func (p *Parser) Parse() error {
 	statements := make([]Stmt, 0)
 
 	for !p.isAtEnd() {
+		p.logger.Debug("- - - - - - - - - - - - - - - - - - - - - - - - -")
+		p.logger.Debug("I am a strange loop")
+		p.logger.Debug("current Lexeme: " + p.peek().Lexeme)
+		p.logger.Debug(".")
 		statement, err := p.declaration()
 		if err != nil {
 			p.hadError = true
@@ -19,6 +26,21 @@ func (p *Parser) Parse() error {
 			continue
 		}
 		statements = append(statements, statement)
+		p.logger.Debug("")
+
+		// Debug:
+		var sb strings.Builder
+		p.tknEnd = p.current
+		for i := p.tknStart; i < p.tknEnd; i++ {
+			if i > p.tknStart {
+				sb.WriteByte(' ')
+			}
+			sb.WriteString(p.Tokens[i].Lexeme)
+		}
+		p.tknStart = p.current
+		stmtTokens := sb.String()
+		p.logger.Debug("processed tokens: " + stmtTokens)
+		p.logger.Debug("")
 	}
 
 	p.Statements = statements
@@ -37,12 +59,19 @@ type Parser struct {
 	hadError   bool
 	errors     []error
 	logger     slog.Logger
+	tknStart   int // debug log: start of a statement
+	tknEnd     int // debug log:   end of a statement
 }
 
 func NewParser(t []Token) *Parser {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+
 	return &Parser{
 		Tokens: t,
 		errors: make([]error, 0),
+		logger: *logger,
 	}
 }
 
@@ -67,6 +96,7 @@ func (e *ParseError) Error() string {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 func (p *Parser) declaration() (Stmt, error) {
+	p.logger.Debug(" |> parser.declaration()")
 	var stmt Stmt
 	var err error
 
@@ -92,6 +122,7 @@ func (p *Parser) declaration() (Stmt, error) {
 // can be used for functions (kind="function") or methods (kind="method").
 // kind is only relevant for the error message.
 func (p *Parser) functionDeclaration(kind string) (Stmt, error) {
+	p.logger.Debug("    |> parser.funDecl()")
 	var err error
 
 	name, err := p.consume(IDENTIFIER, "expect "+kind+" name")
@@ -142,14 +173,15 @@ func (p *Parser) functionDeclaration(kind string) (Stmt, error) {
 	}
 
 	fn := functionStmt{
-		name: name,
+		name:   name,
 		params: parameters,
-		body: body,
+		body:   body,
 	}
 	return &fn, nil
 }
 
 func (p *Parser) varDeclaration() (Stmt, error) {
+	p.logger.Debug("    |> parser.varDecl()")
 	name, err := p.consume(IDENTIFIER, "Expect variable name.")
 	if err != nil {
 		return nil, err
@@ -169,6 +201,7 @@ func (p *Parser) varDeclaration() (Stmt, error) {
 }
 
 func (p *Parser) statement() (Stmt, error) {
+	p.logger.Debug("    |> parser.statement()")
 	if p.match(FOR) {
 		return p.forStatement()
 	}
@@ -197,6 +230,7 @@ func (p *Parser) statement() (Stmt, error) {
 }
 
 func (p *Parser) forStatement() (Stmt, error) {
+	p.logger.Debug("          |> parser.forStmt()")
 	// here, "desugaring" (page 145-146) happens.
 
 	var err error
@@ -267,6 +301,7 @@ func (p *Parser) forStatement() (Stmt, error) {
 }
 
 func (p *Parser) ifStatement() (Stmt, error) {
+	p.logger.Debug("          |> parser.ifStmt()")
 	var err error
 
 	_, err = p.consume(LEFT_PAREN, "Expect '(' after 'if'.")
@@ -305,6 +340,7 @@ func (p *Parser) ifStatement() (Stmt, error) {
 }
 
 func (p *Parser) printStatement() (Stmt, error) {
+	p.logger.Debug("          |> parser.printStmt()")
 	val, err := p.expression()
 	if err != nil {
 		return nil, err
@@ -316,6 +352,8 @@ func (p *Parser) printStatement() (Stmt, error) {
 }
 
 func (p *Parser) whileStatement() (Stmt, error) {
+	p.logger.Debug("          |> parser.whileStmt()")
+
 	p.consume(LEFT_PAREN, "Expect '(' after 'while'.")
 	condition, err := p.expression()
 	if err != nil {
@@ -331,6 +369,8 @@ func (p *Parser) whileStatement() (Stmt, error) {
 }
 
 func (p *Parser) block() ([]Stmt, error) {
+	p.logger.Debug("       |> parser.block()")
+
 	var err error
 
 	statements := make([]Stmt, 0)
@@ -353,6 +393,8 @@ func (p *Parser) block() ([]Stmt, error) {
 }
 
 func (p *Parser) expressionStatement() (Stmt, error) {
+	p.logger.Debug("       |> parser.exprStmt()")
+
 	val, err := p.expression()
 	if err != nil {
 		return nil, err
@@ -365,11 +407,14 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 
 // rule: expression -> assignment ;
 func (p *Parser) expression() (Expr, error) {
+	p.logger.Debug("          |> parser.expr()")
 	return p.assignment()
 }
 
 // rule: assignment -> IDENTIFIER "=" assignment | equality ;
 func (p *Parser) assignment() (Expr, error) {
+	p.logger.Debug("          |> parser.assignment()")
+
 	var err error
 
 	expr, err := p.or()
@@ -405,7 +450,10 @@ func (p *Parser) assignment() (Expr, error) {
 }
 
 func (p *Parser) or() (Expr, error) {
+	p.logger.Debug("          |> parser.logicOr()")
+
 	var err error
+
 	expr, err := p.and()
 	if err != nil {
 		return nil, err
@@ -424,7 +472,10 @@ func (p *Parser) or() (Expr, error) {
 }
 
 func (p *Parser) and() (Expr, error) {
+	p.logger.Debug("          |> parser.logicAnd()")
+
 	expr, err := p.equality()
+
 	if err != nil {
 		return nil, err
 	}
@@ -443,6 +494,8 @@ func (p *Parser) and() (Expr, error) {
 
 // rule: equality -> comparison ( ( "!=" | "==" ) comparison )* ;
 func (p *Parser) equality() (Expr, error) {
+	p.logger.Debug("          |> parser.equality()")
+
 	expr, err := p.comparison()
 	if err != nil {
 		return nil, err
@@ -462,6 +515,8 @@ func (p *Parser) equality() (Expr, error) {
 
 // comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 func (p *Parser) comparison() (Expr, error) {
+	p.logger.Debug("          |> parser.comparison()")
+
 	expr, err := p.term()
 	if err != nil {
 		return nil, err
@@ -481,6 +536,8 @@ func (p *Parser) comparison() (Expr, error) {
 
 // term -> factor ( ( "-" | "+" ) factor )* ;
 func (p *Parser) term() (Expr, error) {
+	p.logger.Debug("          |> parser.term()")
+
 	expr, err := p.factor()
 	if err != nil {
 		return nil, err
@@ -500,6 +557,7 @@ func (p *Parser) term() (Expr, error) {
 
 // factor -> unary ( ( "/" | "*" ) unary )* ;
 func (p *Parser) factor() (Expr, error) {
+	p.logger.Debug("          |> parser.factor()")
 	expr, err := p.unary()
 	if err != nil {
 		return nil, err
@@ -517,8 +575,9 @@ func (p *Parser) factor() (Expr, error) {
 	return expr, nil
 }
 
-// unary -> ( "-" | "!" ) unary | primary ;
 func (p *Parser) unary() (Expr, error) {
+	p.logger.Debug("          |> parser.unary()")
+
 	if p.match(BANG, MINUS) {
 		operator := p.previous()
 		right, err := p.unary()
@@ -537,6 +596,8 @@ func (p *Parser) unary() (Expr, error) {
 }
 
 func (p *Parser) call() (Expr, error) {
+	p.logger.Debug("          |> parser.call()")
+
 	expr, err := p.primary()
 	if err != nil {
 		return nil, err
@@ -591,6 +652,7 @@ func (p *Parser) finishCall(callee Expr) (Expr, error) {
 
 // primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
 func (p *Parser) primary() (Expr, error) {
+	p.logger.Debug("             |> parser.primary()")
 	if p.match(FALSE) {
 		return &literalExpr{false}, nil
 	}
@@ -625,6 +687,7 @@ func (p *Parser) primary() (Expr, error) {
 		return &groupingExpr{expr}, nil
 	}
 
+	fmt.Println("this is the end")
 	return nil, &ParseError{p.peek(), "expect expression"}
 }
 
@@ -677,6 +740,7 @@ func (p *Parser) previous() Token {
 }
 
 func (p *Parser) synchronize() {
+	fmt.Println("I Synchronize.")
 	p.advance()
 	for !p.isAtEnd() {
 		if p.previous().Type == SEMICOLON {
