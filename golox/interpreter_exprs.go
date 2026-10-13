@@ -159,16 +159,22 @@ func (i *Interpreter) visitBinary(binary *binaryExpr) (any, error) {
 }
 
 func (i *Interpreter) visitCallExpr(call *callExpr) (any, error) {
+	callee, err := i.evaluate(call.callee)
+	if err != nil {
+		return nil, fmt.Errorf("i.evaluate(call.callee): %w", err)
+	}
+
 	arguments := make([]any, 0)
 	for _, argument := range call.arguments {
 		arg, err := i.evaluate(argument)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("i.evaluate(argument=%v): %w", arg, err)
 		}
 		arguments = append(arguments, arg)
 	}
 
-	function, ok := call.callee.(LoxCallable)
+	// type assertion: does callee implement LoxCallable?
+	function, ok := callee.(LoxCallable)
 	if !ok {
 		return nil, NewRuntimeError(call.paren, "can only call functions and classes.")
 	}
