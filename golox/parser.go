@@ -405,13 +405,11 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 	return &exprStmt{Expression: val}, nil
 }
 
-// rule: expression -> assignment ;
 func (p *Parser) expression() (Expr, error) {
 	p.logger.Debug("          |> parser.expr()")
 	return p.assignment()
 }
 
-// rule: assignment -> IDENTIFIER "=" assignment | equality ;
 func (p *Parser) assignment() (Expr, error) {
 	p.logger.Debug("          |> parser.assignment()")
 
@@ -492,7 +490,6 @@ func (p *Parser) and() (Expr, error) {
 	return expr, nil
 }
 
-// rule: equality -> comparison ( ( "!=" | "==" ) comparison )* ;
 func (p *Parser) equality() (Expr, error) {
 	p.logger.Debug("          |> parser.equality()")
 
@@ -513,7 +510,6 @@ func (p *Parser) equality() (Expr, error) {
 	return expr, nil
 }
 
-// comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 func (p *Parser) comparison() (Expr, error) {
 	p.logger.Debug("          |> parser.comparison()")
 
@@ -534,7 +530,6 @@ func (p *Parser) comparison() (Expr, error) {
 	return expr, nil
 }
 
-// term -> factor ( ( "-" | "+" ) factor )* ;
 func (p *Parser) term() (Expr, error) {
 	p.logger.Debug("          |> parser.term()")
 
@@ -555,7 +550,6 @@ func (p *Parser) term() (Expr, error) {
 	return expr, nil
 }
 
-// factor -> unary ( ( "/" | "*" ) unary )* ;
 func (p *Parser) factor() (Expr, error) {
 	p.logger.Debug("          |> parser.factor()")
 	expr, err := p.unary()
@@ -650,7 +644,6 @@ func (p *Parser) finishCall(callee Expr) (Expr, error) {
 	return &call, nil
 }
 
-// primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
 func (p *Parser) primary() (Expr, error) {
 	p.logger.Debug("             |> parser.primary()")
 	if p.match(FALSE) {
