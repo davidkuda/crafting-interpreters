@@ -5,6 +5,13 @@ import (
 	"fmt"
 )
 
+var ErrUnexpectedNode = errors.New("unexpected AST node type")
+
+func unexpectedNode(expected string, got Expr) error {
+	return fmt.Errorf("%w: expected %s, got %T",
+		ErrUnexpectedNode, expected, got)
+}
+
 func (i *Interpreter) evaluate(expr Expr) (any, error) {
 	switch e := expr.(type) {
 
@@ -39,7 +46,7 @@ func (i *Interpreter) evaluate(expr Expr) (any, error) {
 func (i *Interpreter) visitAssignExpr(expr Expr) (any, error) {
 	a, ok := expr.(*assignExpr)
 	if !ok {
-		return nil, errors.New("not a variable expression")
+		return nil, unexpectedNode("*assignExpr", expr)
 	}
 	value, err := i.evaluate(a.value)
 	if err != nil {
@@ -54,7 +61,7 @@ func (i *Interpreter) visitAssignExpr(expr Expr) (any, error) {
 func (i *Interpreter) visitBinary(expr Expr) (any, error) {
 	binary, ok := expr.(*binaryExpr)
 	if !ok {
-		return nil, errors.New("not a binary")
+		return nil, unexpectedNode("*binaryExpr", expr)
 	}
 
 	left, err := i.evaluate(binary.Left)
@@ -168,10 +175,9 @@ func (i *Interpreter) visitBinary(expr Expr) (any, error) {
 }
 
 func (i *Interpreter) visitCallExpr(expr Expr) (any, error) {
-	//
 	call, ok := expr.(*callExpr)
 	if !ok {
-		return nil, errors.New("not a call expression")
+		return nil, unexpectedNode("*callExpr", expr)
 	}
 
 	arguments := make([]any, 0)
@@ -196,11 +202,10 @@ func (i *Interpreter) visitCallExpr(expr Expr) (any, error) {
 	return function.Call(i, arguments)
 }
 
-
 func (i *Interpreter) visitLogical(expr Expr) (any, error) {
 	logical, ok := expr.(*logicalExpr)
 	if !ok {
-		return nil, errors.New("not a logical expression")
+		return nil, unexpectedNode("*logicalExpr", expr)
 	}
 
 	left, err := i.evaluate(logical.left)
@@ -224,7 +229,7 @@ func (i *Interpreter) visitLogical(expr Expr) (any, error) {
 func (i *Interpreter) visitUnary(expr Expr) (any, error) {
 	unary, ok := expr.(*unaryExpr)
 	if !ok {
-		return nil, errors.New("not a unary")
+		return nil, unexpectedNode("*unaryExpr", expr)
 	}
 
 	right, err := i.evaluate(unary.Right)
@@ -251,7 +256,7 @@ func (i *Interpreter) visitUnary(expr Expr) (any, error) {
 func (i *Interpreter) visitVariable(expr Expr) (any, error) {
 	variableExpr, ok := expr.(*variableExpr)
 	if !ok {
-		return nil, errors.New("not a variable expression")
+		return nil, unexpectedNode("*variableExpr", expr)
 	}
 	return i.environment.Get(variableExpr.Name)
 }
