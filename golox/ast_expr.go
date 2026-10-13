@@ -21,7 +21,9 @@ type binaryExpr struct {
 func (*binaryExpr) exprNode() {}
 
 type callExpr struct {
-	callee    Expr
+	callee Expr
+	// paren: token with location of closing paren. we use it when
+	// we report a runtime error caused by a function call.
 	paren     Token
 	arguments []Expr
 }

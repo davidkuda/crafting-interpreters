@@ -66,6 +66,7 @@ type Parser struct {
 func NewParser(t []Token) *Parser {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelDebug,
+		// Level: slog.LevelInfo,
 	}))
 
 	return &Parser{
@@ -581,9 +582,10 @@ func (p *Parser) unary() (Expr, error) {
 		return &unaryExpr{operator, right}, nil
 	}
 
+	// or enrich the error:
 	expr, err := p.call()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("p.call(): %w", err)
 	}
 
 	return expr, nil
@@ -594,17 +596,13 @@ func (p *Parser) call() (Expr, error) {
 
 	expr, err := p.primary()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("p.primary(): %w", err)
 	}
 
-	for {
-		if p.match(LEFT_PAREN) {
-			expr, err = p.finishCall(expr)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			break
+	for p.match(LEFT_PAREN) {
+		expr, err = p.finishCall(expr)
+		if err != nil {
+			return nil, fmt.Errorf("p.finishCall(expr): %w", err)
 		}
 	}
 
@@ -612,6 +610,8 @@ func (p *Parser) call() (Expr, error) {
 }
 
 func (p *Parser) finishCall(callee Expr) (Expr, error) {
+	p.logger.Debug("          |> parser.finishCall()")
+
 	arguments := make([]Expr, 0)
 
 	for {
@@ -621,7 +621,7 @@ func (p *Parser) finishCall(callee Expr) (Expr, error) {
 
 		expr, err := p.expression()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("p.expression(): %w", err)
 		}
 		arguments = append(arguments, expr)
 
@@ -690,6 +690,10 @@ func (p *Parser) primary() (Expr, error) {
 func (p *Parser) match(tts ...TokenType) bool {
 	for _, tt := range tts {
 		if p.check(tt) {
+			msg := fmt.Sprintf(
+				"matched: %s: %s",
+				p.peek().Type.String(), p.peek().Lexeme)
+			p.logger.Debug(msg)
 			p.advance()
 			return true
 		}
@@ -700,6 +704,7 @@ func (p *Parser) match(tts ...TokenType) bool {
 
 func (p *Parser) consume(tt TokenType, message string) (Token, error) {
 	if p.check(tt) {
+		p.logger.Debug("consumed: " + p.peek().Lexeme)
 		return p.advance(), nil
 	}
 
