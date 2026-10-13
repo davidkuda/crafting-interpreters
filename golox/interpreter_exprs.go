@@ -18,10 +18,10 @@ func (i *Interpreter) evaluate(expr Expr) (any, error) {
 		return i.visitCallExpr(e)
 
 	case *groupingExpr:
-		return i.evaluate(e.Expression)
+		return i.visitGroupingExpr(e)
 
 	case *literalExpr:
-		return e.Value, nil
+		return i.visitLiteralExpr(e)
 
 	case *logicalExpr:
 		return i.visitLogical(e)
@@ -179,6 +179,14 @@ func (i *Interpreter) visitCallExpr(call *callExpr) (any, error) {
 	}
 
 	return function.Call(i, arguments)
+}
+
+func (i *Interpreter) visitGroupingExpr(grouping *groupingExpr) (any, error) {
+	return i.evaluate(grouping.Expression)
+}
+
+func (i *Interpreter) visitLiteralExpr(literal *literalExpr) (any, error) {
+	return literal.Value, nil
 }
 
 func (i *Interpreter) visitLogical(logical *logicalExpr) (any, error) {
