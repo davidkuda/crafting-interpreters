@@ -32,7 +32,7 @@ type TokenType int
 // TokenType ENUM
 const (
 	// Single-character tokens.
-	LEFT_PAREN TokenType = iota
+	LEFT_PAREN TokenType = iota // 0
 	RIGHT_PAREN
 	LEFT_BRACE
 	RIGHT_BRACE
@@ -45,7 +45,7 @@ const (
 	STAR
 
 	// One or two character tokens.
-	BANG
+	BANG // 11
 	BANG_EQUAL
 	EQUAL
 	EQUAL_EQUAL
@@ -55,12 +55,12 @@ const (
 	LESS_EQUAL
 
 	// Literals.
-	IDENTIFIER
+	IDENTIFIER // 19
 	STRING
 	NUMBER
 
 	// Keywords.
-	AND
+	AND // 22
 	CLASS
 	ELSE
 	FALSE
