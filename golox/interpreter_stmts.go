@@ -6,12 +6,15 @@ import (
 )
 
 func (i *Interpreter) execute(statement Stmt) error {
-	switch statement.(type) {
+	switch stmt := statement.(type) {
 	case *blockStmt:
 		return i.visitBlockStatement(statement)
 
 	case *exprStmt:
 		return i.visitExpressionStmt(statement)
+
+	case *functionStmt:
+		return i.visitFunctionStmt(stmt)
 
 	case *ifStmt:
 		return i.visitIfStmt(statement)
@@ -72,6 +75,13 @@ func (i *Interpreter) visitExpressionStmt(s Stmt) error {
 	if err != nil {
 		return fmt.Errorf("can't evaluate stmt.Expression: %v", err)
 	}
+
+	return nil
+}
+
+func (i *Interpreter) visitFunctionStmt(s *functionStmt) error {
+	function := newLoxFunction(s)
+	i.environment.Define(s.name.Lexeme, function)
 
 	return nil
 }
