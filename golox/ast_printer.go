@@ -4,6 +4,13 @@ import (
 	"fmt"
 )
 
+func (f *functionStmt) String() string {
+	return fmt.Sprintf(
+		"(function name=%v args=%v body=%v)",
+		f.name, f.params, f.body,
+	)
+}
+
 func (s *exprStmt) String() string {
 	return fmt.Sprintf(
 		// "exprStmt{expression: %v}",
