@@ -6,6 +6,7 @@ import (
 )
 
 func (i *Interpreter) evaluate(expr Expr) (any, error) {
+	i.logger.Debug("i.evaluate(expr)", "expr", fmt.Sprint(expr))
 	switch e := expr.(type) {
 
 	case *assignExpr:
@@ -37,6 +38,8 @@ func (i *Interpreter) evaluate(expr Expr) (any, error) {
 }
 
 func (i *Interpreter) visitAssignExpr(a *assignExpr) (any, error) {
+	i.logger.Debug("i.visitAssignExpr()")
+
 	value, err := i.evaluate(a.value)
 	if err != nil {
 		return nil, err
@@ -48,6 +51,8 @@ func (i *Interpreter) visitAssignExpr(a *assignExpr) (any, error) {
 }
 
 func (i *Interpreter) visitBinary(binary *binaryExpr) (any, error) {
+	i.logger.Debug("i.visitBinary()")
+
 	left, err := i.evaluate(binary.Left)
 	if err != nil {
 		return nil, err
@@ -159,6 +164,8 @@ func (i *Interpreter) visitBinary(binary *binaryExpr) (any, error) {
 }
 
 func (i *Interpreter) visitCallExpr(call *callExpr) (any, error) {
+	i.logger.Debug("i.visitCallExpr()")
+
 	callee, err := i.evaluate(call.callee)
 	if err != nil {
 		return nil, fmt.Errorf("i.evaluate(call.callee): %w", err)
@@ -188,14 +195,20 @@ func (i *Interpreter) visitCallExpr(call *callExpr) (any, error) {
 }
 
 func (i *Interpreter) visitGroupingExpr(grouping *groupingExpr) (any, error) {
+	i.logger.Debug("i.visitGroupingExpr()")
+
 	return i.evaluate(grouping.Expression)
 }
 
 func (i *Interpreter) visitLiteralExpr(literal *literalExpr) (any, error) {
+	i.logger.Debug("i.visitLiteralExpr()")
+
 	return literal.Value, nil
 }
 
 func (i *Interpreter) visitLogical(logical *logicalExpr) (any, error) {
+	i.logger.Debug("i.visitLogical()")
+
 	left, err := i.evaluate(logical.left)
 	if err != nil {
 		return nil, err
@@ -215,6 +228,8 @@ func (i *Interpreter) visitLogical(logical *logicalExpr) (any, error) {
 }
 
 func (i *Interpreter) visitUnary(unary *unaryExpr) (any, error) {
+	i.logger.Debug("i.visitUnary()")
+
 	right, err := i.evaluate(unary.Right)
 	if err != nil {
 		return nil, err
@@ -237,5 +252,7 @@ func (i *Interpreter) visitUnary(unary *unaryExpr) (any, error) {
 }
 
 func (i *Interpreter) visitVariable(vExpr *variableExpr) (any, error) {
+	i.logger.Debug("i.visitVariable()")
+
 	return i.environment.Get(vExpr.Name)
 }

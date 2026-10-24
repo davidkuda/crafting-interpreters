@@ -2,20 +2,29 @@ package golox
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 )
 
 type Interpreter struct {
 	globals     *Environment
 	environment *Environment
+	logger      slog.Logger
 }
 
 func NewInterpreter() *Interpreter {
 	globals := NewEnvironment(nil)
 	globals.Define("clock", Clock{})
 
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+		// Level: slog.LevelInfo,
+	}))
+
 	return &Interpreter{
 		globals:     globals,
 		environment: globals,
+		logger:      *logger,
 	}
 }
 

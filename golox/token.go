@@ -23,7 +23,7 @@ func NewToken(
 	}
 }
 
-func (t *Token) String() string {
+func (t Token) String() string {
 	return t.Lexeme + " " + fmt.Sprintf("%v", t.Literal)
 }
 

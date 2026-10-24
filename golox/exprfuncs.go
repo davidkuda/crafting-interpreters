@@ -41,9 +41,10 @@ func literalToString(v any) string {
 	case nil:
 		return "nil"
 	case string:
-		return x
+		return fmt.Sprintf("(string (%v))", v)
 	case float64:
-		return strconv.FormatFloat(x, 'f', -1, 64)
+		n := strconv.FormatFloat(x, 'f', -1, 64)
+		return fmt.Sprintf("(number %v)", n)
 	case bool:
 		if x {
 			return "true"

@@ -4,10 +4,13 @@ import (
 	"fmt"
 )
 
+// ------------------------------------------------
+// AST: Statements
+
 func (f *functionStmt) String() string {
 	return fmt.Sprintf(
-		"(function name=%v args=%v body=%v)",
-		f.name, f.params, f.body,
+		"(function name=%v args=%s body=%v)",
+		f.name.Lexeme, f.params, f.body,
 	)
 }
 
@@ -19,6 +22,21 @@ func (s *exprStmt) String() string {
 	)
 }
 
+
+// ------------------------------------------------
+// AST: Expressions
+
+func (a *assignExpr) String() string {
+	return fmt.Sprintf(
+		"(assign name=%v value=%v)",
+		a.name.Lexeme, a.value,
+		)
+}
+
+func (*binaryExpr) String() string {
+	return "binaryExpr"
+}
+
 func (call *callExpr) String() string {
 	return fmt.Sprintf(
 		"(call callee=%v arguments=%v)",
@@ -27,8 +45,20 @@ func (call *callExpr) String() string {
 	)
 }
 
+func (*groupingExpr) String() string {
+	return "groupingExpr"
+}
+
 func (literal *literalExpr) String() string {
 	return literalToString(literal.Value)
+}
+
+func (*logicalExpr) String() string {
+	return "logicalExpr"
+}
+
+func (*unaryExpr) String() string {
+	return "unaryExpr"
 }
 
 func (variable *variableExpr) String() string {

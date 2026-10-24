@@ -29,10 +29,12 @@ func (i *Interpreter) execute(statement Stmt) error {
 		return i.visitVarStmt(statement)
 	}
 
-	return errors.New("no expression in statement")
+	return errors.New("could not match statement type")
 }
 
 func (i *Interpreter) visitBlockStatement(s Stmt) error {
+	i.logger.Debug("i.visitBlockStatement()")
+
 	block, ok := s.(*blockStmt)
 	if !ok {
 		return errors.New("not a blockStmt")
@@ -62,6 +64,8 @@ func (i *Interpreter) executeBlock(statements []Stmt, env *Environment) error {
 }
 
 func (i *Interpreter) visitExpressionStmt(s Stmt) error {
+	i.logger.Debug("i.visitExpressionStmt()")
+
 	stmt, ok := s.(*exprStmt)
 	if !ok {
 		return errors.New("not an exprStmt")
@@ -80,6 +84,8 @@ func (i *Interpreter) visitExpressionStmt(s Stmt) error {
 }
 
 func (i *Interpreter) visitFunctionStmt(s *functionStmt) error {
+	i.logger.Debug("i.visitFunctionStmt()")
+
 	function := newLoxFunction(s)
 	i.environment.Define(s.name.Lexeme, function)
 
@@ -87,6 +93,8 @@ func (i *Interpreter) visitFunctionStmt(s *functionStmt) error {
 }
 
 func (i *Interpreter) visitIfStmt(s Stmt) error {
+	i.logger.Debug("i.visitIfStmt()")
+
 	var err error
 
 	stmt, ok := s.(*ifStmt)
@@ -115,6 +123,8 @@ func (i *Interpreter) visitIfStmt(s Stmt) error {
 }
 
 func (i *Interpreter) visitPrintStmt(s Stmt) error {
+	i.logger.Debug("i.visitPrintStmt()")
+
 	stmt, ok := s.(*printStmt)
 	if !ok {
 		return errors.New("not a printStmt")
@@ -136,6 +146,8 @@ func (i *Interpreter) visitPrintStmt(s Stmt) error {
 }
 
 func (i *Interpreter) visitWhileStmt(s Stmt) error {
+	i.logger.Debug("i.visitWhileStmt()")
+
 	stmt, ok := s.(*whileStmt)
 	if !ok {
 		return errors.New("not a whileStmt")
@@ -158,6 +170,8 @@ func (i *Interpreter) visitWhileStmt(s Stmt) error {
 }
 
 func (i *Interpreter) visitVarStmt(s Stmt) error {
+	i.logger.Debug("i.visitVarStmt()")
+
 	var err error
 
 	stmt, ok := s.(*varStmt)
