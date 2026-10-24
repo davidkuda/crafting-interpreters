@@ -137,7 +137,7 @@ func (i *Interpreter) visitPrintStmt(s Stmt) error {
 	val, err := i.evaluate(stmt.Expression)
 
 	if err != nil {
-		fmt.Errorf("can't evaluate stmt.Print: %v", err)
+		return fmt.Errorf("can't evaluate stmt.Print: %v", err)
 	}
 
 	fmt.Println(val)
