@@ -294,6 +294,21 @@ function       → IDENTIFIER "(" parameters? ")" block ;
 parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
 ```
 
+**Return Statements:**
+
+```
+statement   -> exprStmt
+               | forStmt
+               | ifStmt
+               | printStmt
+               | returnStmt
+               | whileStmt
+               | block ;
+
+returnStmt  -> "return" expression? ";" ;
+```
+
+
 ### New grammar:
 
 ```
@@ -310,6 +325,7 @@ statement   -> exprStmt
                | forStmt
                | ifStmt
                | printStmt
+               | returnStmt
                | whileStmt
                | block ;
 exprStmt    -> expression ";" ;
@@ -321,6 +337,7 @@ forStmt     -> "for" "("
 ifStmt      -> "if" "(" expression ")" statement
                ( "else" statement )? ;
 printStmt   -> "print" expression ";" ;
+returnStmt  -> "return" expression? ";" ;
 whileStmt   -> "while" "(" expression ")" statement ;
 block        -> "{" declaration* "}" ;
 

@@ -215,6 +215,10 @@ func (p *Parser) statement() (Stmt, error) {
 		return p.printStatement()
 	}
 
+	if p.match(RETURN) {
+		return p.returnStatement()
+	}
+
 	if p.match(WHILE) {
 		return p.whileStatement()
 	}
@@ -350,6 +354,30 @@ func (p *Parser) printStatement() (Stmt, error) {
 	p.consume(SEMICOLON, "Expect ';' after value.")
 
 	return &printStmt{Expression: val}, nil
+}
+
+func (p *Parser) returnStatement() (Stmt, error) {
+	p.logger.Debug("          |> parser.returnStatement()")
+
+	var err error
+
+	keyword := p.previous()
+	var value Expr
+	if !p.check(SEMICOLON) {
+		value, err = p.expression()
+		if err != nil {
+			return nil, fmt.Errorf("expected an expression, got an error instead: %e", err)
+		}
+	}
+
+	p.consume(SEMICOLON, "expect ';' after return value.")
+
+	r := returnStmt{
+		keyword: keyword,
+		value: value,
+	}
+
+	return &r, nil
 }
 
 func (p *Parser) whileStatement() (Stmt, error) {

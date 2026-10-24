@@ -38,6 +38,13 @@ type printStmt struct {
 
 func (*printStmt) stmt() {}
 
+type returnStmt struct {
+	keyword Token
+	value   Expr
+}
+
+func (*returnStmt) stmt() {}
+
 type whileStmt struct {
 	condition Expr
 	body      Stmt
