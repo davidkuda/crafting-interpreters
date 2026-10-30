@@ -1,11 +1,10 @@
-fun add(a, b) {
-    print "adding a and b";
-    return a+b;
+fun fib(n) {
+  if (n <= 1) {
+    print "n se 1";
+    return n;
+  }
+  return fib(n - 2) + fib(n - 1);
 }
 
-var i = add(39, 3);
-
+var i = fib(3);
 print i;
-
-print "should be true:"
-print i == 42;
