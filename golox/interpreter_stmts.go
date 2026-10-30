@@ -22,6 +22,9 @@ func (i *Interpreter) execute(statement Stmt) error {
 	case *printStmt:
 		return i.visitPrintStmt(statement)
 
+	case *returnStmt:
+		return i.visitReturnStmt(stmt)
+
 	case *whileStmt:
 		return i.visitWhileStmt(statement)
 
@@ -45,6 +48,8 @@ func (i *Interpreter) visitBlockStatement(s Stmt) error {
 }
 
 func (i *Interpreter) executeBlock(statements []Stmt, env *Environment) error {
+	i.logger.Debug("i.executeBlock()")
+
 	var err error
 
 	previous := i.environment
@@ -143,6 +148,29 @@ func (i *Interpreter) visitPrintStmt(s Stmt) error {
 	fmt.Println(val)
 
 	return nil
+}
+
+type ReturnValue struct {
+    Value any
+}
+
+func (r ReturnValue) Error() string {
+    return "return"
+}
+
+func (i *Interpreter) visitReturnStmt(s *returnStmt) error {
+	i.logger.Debug("i.visitReturnStmt()")
+
+	var err error
+	var value any
+
+	if s.value != nil {
+		value, err = i.evaluate(s.value)
+		if err != nil {
+			return fmt.Errorf("i.visitReturnStmt: %w", err)
+		}
+	}
+	return ReturnValue{Value: value}
 }
 
 func (i *Interpreter) visitWhileStmt(s Stmt) error {
