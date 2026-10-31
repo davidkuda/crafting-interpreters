@@ -51,16 +51,17 @@ func (i *Interpreter) executeBlock(statements []Stmt, env *Environment) (execRes
 	i.logger.Debug("i.executeBlock()")
 
 	previous := i.environment
+	defer func() {
+		i.environment = previous
+	}()
 	i.environment = env
 
 	for _, statement := range statements {
 		res, err := i.execute(statement)
 		if err != nil {
-			i.environment = previous
 			return execResult{}, err
 		}
 		if res.shouldReturn {
-			i.environment = previous
 			return res, nil
 		}
 	}
