@@ -107,11 +107,10 @@ func (i *Interpreter) visitIfStmt(s Stmt) error {
 		return errors.New("not an ifStmt")
 	}
 
-	execResCondition, err := i.evaluate(stmt.condition)
+	condition, err := i.evaluate(stmt.condition)
 	if err != nil {
 		return fmt.Errorf("could not evaluate ifStmt.condition: %v", err)
 	}
-	condition := execResCondition.value
 
 	if isTruthy(condition) {
 		err = i.execute(stmt.thenBranch)
@@ -140,11 +139,11 @@ func (i *Interpreter) visitPrintStmt(s Stmt) error {
 		return errors.New("expected stmt.Expression")
 	}
 
-	execResVal, err := i.evaluate(stmt.Expression)
+	val, err := i.evaluate(stmt.Expression)
+
 	if err != nil {
 		return fmt.Errorf("can't evaluate stmt.Print: %v", err)
 	}
-	val := execResVal.value
 
 	fmt.Println(val)
 
@@ -162,14 +161,14 @@ func (r ReturnValue) Error() string {
 func (i *Interpreter) visitReturnStmt(s *returnStmt) error {
 	i.logger.Debug("i.visitReturnStmt()")
 
+	var err error
 	var value any
 
 	if s.value != nil {
-		execResValue, err := i.evaluate(s.value)
+		value, err = i.evaluate(s.value)
 		if err != nil {
-			return fmt.Errorf("i.visitReturnStmt(): %w", err)
+			return fmt.Errorf("i.visitReturnStmt: %w", err)
 		}
-		value = execResValue.value
 	}
 	return ReturnValue{Value: value}
 }
@@ -183,11 +182,10 @@ func (i *Interpreter) visitWhileStmt(s Stmt) error {
 	}
 
 	for {
-		execResCondition, err := i.evaluate(stmt.condition)
+		condition, err := i.evaluate(stmt.condition)
 		if err != nil {
 			return err
 		}
-		condition := execResCondition.value
 
 		if !isTruthy(condition) {
 			break
@@ -202,6 +200,8 @@ func (i *Interpreter) visitWhileStmt(s Stmt) error {
 func (i *Interpreter) visitVarStmt(s Stmt) error {
 	i.logger.Debug("i.visitVarStmt()")
 
+	var err error
+
 	stmt, ok := s.(*varStmt)
 	if !ok {
 		return errors.New("not a varStmt")
@@ -212,11 +212,10 @@ func (i *Interpreter) visitVarStmt(s Stmt) error {
 	// e.g. if you wanted a default value for your types,
 	// you could add it here.
 	if stmt.initializer != nil {
-		execResValue, err := i.evaluate(stmt.initializer)
+		value, err = i.evaluate(stmt.initializer)
 		if err != nil {
 			return err
 		}
-		value = execResValue.value
 	}
 
 	i.environment.Define(stmt.name.Lexeme, value)

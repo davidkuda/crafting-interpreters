@@ -5,5 +5,5 @@ type LoxCallable interface {
 	// The number of arguments a function or operation expects.
 	// With functions, the arity is determined by the number of parameters it declares.
 	Arity() int
-	Call(interpreter *Interpreter, arguments []any) (execResult, error)
+	Call(interpreter *Interpreter, arguments []any) (any, error)
 }
