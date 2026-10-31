@@ -60,6 +60,7 @@ func (i *Interpreter) executeBlock(statements []Stmt, env *Environment) (execRes
 			return execResult{}, err
 		}
 		if res.shouldReturn {
+			i.environment = previous
 			return res, nil
 		}
 	}
