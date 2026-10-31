@@ -50,9 +50,9 @@ func (i *Interpreter) Interpret(statements []Stmt) error {
 	var err error
 
 	for _, statement := range statements {
-		err = i.execute(statement)
+		_, err = i.execute(statement)
 		if err != nil {
-			return fmt.Errorf("cant execute: %v", err)
+			return fmt.Errorf("i.Interpret(): %w", err)
 		}
 	}
 	return nil

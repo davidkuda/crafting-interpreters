@@ -1,7 +1,6 @@
 package golox
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -26,15 +25,13 @@ func (f *loxFunction) Call(interpreter *Interpreter, arguments []any) (any, erro
 		env.Define(f.declaration.params[i].Lexeme, arguments[i])
 	}
 
-	err := interpreter.executeBlock(f.declaration.body, env)
-
-	var returnValue ReturnValue
-	if errors.As(err, &returnValue) {
-		return returnValue.Value, nil
-	}
-
+	res, err := interpreter.executeBlock(f.declaration.body, env)
 	if err != nil {
 		return nil, fmt.Errorf("Call(): %w", err)
+	}
+
+	if res.shouldReturn {
+		return res.value, nil
 	}
 
 	return nil, nil

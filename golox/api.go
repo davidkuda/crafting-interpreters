@@ -63,7 +63,7 @@ func (g *Golox) InterpretAST() error {
 
 	for _, statement := range g.parser.Statements {
 		g.interpreter.logger.Debug("i.execute(stmt)", "stmt", fmt.Sprint(statement))
-		err = g.interpreter.execute(statement)
+		_, err = g.interpreter.execute(statement)
 		if err != nil {
 			return fmt.Errorf("cant execute: %v", err)
 		}
