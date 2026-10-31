@@ -65,8 +65,8 @@ type Parser struct {
 
 func NewParser(t []Token) *Parser {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
-		// Level: slog.LevelInfo,
+		// Level: slog.LevelDebug,
+		Level: slog.LevelInfo,
 	}))
 
 	return &Parser{
@@ -110,10 +110,11 @@ func (p *Parser) declaration() (Stmt, error) {
 	}
 
 	if err != nil {
-		// p.decleration gets called repeatedly in Parse.
+		// p.declaration gets called repeatedly in Parse.
 		// when entering panic mode, go to the beginning
 		// of the next stmt or declaration and continue
 		// parsing.
+		// TODO: do something with the error
 		p.synchronize()
 	}
 
@@ -374,7 +375,7 @@ func (p *Parser) returnStatement() (Stmt, error) {
 
 	r := returnStmt{
 		keyword: keyword,
-		value: value,
+		value:   value,
 	}
 
 	return &r, nil
@@ -642,7 +643,7 @@ func (p *Parser) finishCall(callee Expr) (Expr, error) {
 
 	arguments := make([]Expr, 0)
 
-	for {
+	for !p.check(RIGHT_PAREN) {
 		if len(arguments) > 255 {
 			return nil, NewParseError(p.peek(), "Can't have more than 255 arguments.")
 		}
@@ -708,8 +709,8 @@ func (p *Parser) primary() (Expr, error) {
 		return &groupingExpr{expr}, nil
 	}
 
-	fmt.Println("this is the end")
-	return nil, &ParseError{p.peek(), "expect expression"}
+	p.logger.Debug("                no primary matched")
+	return nil, &ParseError{p.peek(), "unmatched primary"}
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -766,7 +767,6 @@ func (p *Parser) previous() Token {
 }
 
 func (p *Parser) synchronize() {
-	fmt.Println("I Synchronize.")
 	p.advance()
 	for !p.isAtEnd() {
 		if p.previous().Type == SEMICOLON {
